@@ -1300,7 +1300,19 @@ function renderShop() {
     renderEvents();
   } else {
     for (const ss of specialSeals) {
-      if (ss.hidden) continue;
+      if (ss.hidden && ss.owned === 0) {
+        // Show teaser hint instead
+        const hint = document.createElement('div');
+        hint.style.cssText = 'background:rgba(168,85,247,0.07);border:1.5px dashed rgba(168,85,247,0.3);border-radius:13px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center;';
+        hint.innerHTML = `
+          <div style="font-size:1.5rem;">🌀</div>
+          <div style="font-family:'Boogaloo',cursive;font-size:0.95rem;color:rgba(192,132,252,0.6);">??? Mysterious Seal</div>
+          <div style="font-size:0.7rem;color:rgba(192,132,252,0.4);font-weight:700;line-height:1.6;">A strange presence lurks beyond the veil...<br>Redeem a secret code in ⚙️ Settings to reveal it.</div>
+          <div style="font-size:0.68rem;color:rgba(192,132,252,0.25);font-weight:700;letter-spacing:1px;margin-top:2px;">Hint: it's a JoJo reference 🤫</div>`;
+        list.appendChild(hint);
+        continue;
+      }
+      if (ss.hidden) ss.hidden = false; // revealed after code unlock
       const cost=Math.floor(ss.cost*Math.pow(ss.costMult,ss.owned));
       const can=fish>=cost;
       const isOwned=ss.owned>0;
@@ -1618,10 +1630,11 @@ function redeemCode() {
   usedCodes.add(code);
   if (def.reward === 'seal') {
     const seal = specialSeals.find(s => s.id === def.sealId);
-    if (seal) { seal.owned = Math.max(seal.owned, 1); }
+    if (seal) { seal.owned = Math.max(seal.owned, 1); seal.hidden = false; }
   }
   showCodeMsg(def.msg, '#4ecb71');
   spawnSplash('🎟️ Code redeemed!', true);
+  if (def.sealId) { switchTab('seals'); toggleSettings(); }
   saveGame(); updateUI();
 }
 
