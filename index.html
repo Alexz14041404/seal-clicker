@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- 🦭 Seal Clicker — made by Alexz -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -361,8 +362,8 @@ const specialSeals = [
     name: 'Sleepy Niko',
     icon: '😴',
     url: "https://i.pinimg.com/1200x/12/13/0f/12130fa8937cb34ed4fc60cc8b973da3.jpg",
-    chance: 1/20,
-    fishBonus: 10,
+    chance: 1/40,
+    fishBonus: 7,
     messages: [
       '"zzz... still caught you a fish tho 🐟"',
       '"just five more minutes... 💤"',
@@ -374,15 +375,15 @@ const specialSeals = [
     cost: 100,
     costMult: 3,
     owned: 0,
-    rarity: '1/20 chance',
+    rarity: '1/40 chance',
   },
   {
     id: 'hootie',
     name: 'Hootie',
     icon: '🦉',
     url: "https://i.pinimg.com/736x/0e/57/83/0e5783ece88579ed545bbcc7d67cee68.jpg",
-    chance: 1/35,
-    fishBonus: 30,
+    chance: 1/80,
+    fishBonus: 15,
     messages: [
       '"hoot hoot... here\'s your fish 🐟"',
       '"who? who gave you fish? me. 🦉"',
@@ -390,10 +391,10 @@ const specialSeals = [
       '"hoooooot 🦉✨"',
       '"i see all. i give fish. 🦉"',
     ],
-    cost: 250,
+    cost: 290,
     costMult: 3,
     owned: 0,
-    rarity: '1/35 chance',
+    rarity: '1/80 chance',
   },
   // Add more special seals here!
 ];
@@ -413,22 +414,26 @@ function pickSeal() {
 
 // ── upgrades shop items ───────────────────────
 const upgradeItems = [
-  { id:'flippers',     name:'Better Flippers',  icon:'🦭', desc:'+1 fish per click',      baseCost:10,    costMult:1.5, owned:0, effectVal:1   },
-  { id:'bucket',       name:'Fish Bucket',      icon:'🪣', desc:'+3 fish per click',      baseCost:50,    costMult:1.6, owned:0, effectVal:3   },
-  { id:'auto_pup',     name:'Seal Pup',         icon:'🐾', desc:'Auto-click every 3s',    baseCost:30,    costMult:1.8, owned:0, isAuto:true, interval:3000, cpt:1 },
-  { id:'auto_colony',  name:'Seal Colony',      icon:'🌊', desc:'Auto-click every 2s',    baseCost:120,   costMult:2.0, owned:0, isAuto:true, interval:2000, cpt:1 },
-  { id:'net',          name:'Fish Net',         icon:'🕸️', desc:'+5 fish per click',      baseCost:200,   costMult:1.7, owned:0, effectVal:5   },
-  { id:'auto_orca',    name:'Trained Orca',     icon:'🐋', desc:'Auto-click every 1s',    baseCost:400,   costMult:2.2, owned:0, isAuto:true, interval:1000, cpt:1 },
-  { id:'golden',       name:'Golden Fish',      icon:'✨', desc:'+10 fish per click',     baseCost:500,   costMult:2.0, owned:0, effectVal:10  },
-  { id:'iceberg',      name:'Iceberg Base',     icon:'🧊', desc:'Auto-click every 0.5s',  baseCost:800,   costMult:2.3, owned:0, isAuto:true, interval:500,  cpt:1 },
-  { id:'sonar',        name:'Fish Sonar',       icon:'📡', desc:'+20 fish per click',     baseCost:1200,  costMult:2.0, owned:0, effectVal:20  },
-  { id:'frenzy',       name:'Fish Frenzy',      icon:'🐟', desc:'3 auto-clicks / 1s',     baseCost:1500,  costMult:2.5, owned:0, isAuto:true, interval:1000, cpt:3 },
-  { id:'mega',         name:'Mega Seal',        icon:'🦁', desc:'+25 fish per click',     baseCost:3000,  costMult:2.0, owned:0, effectVal:25  },
-  { id:'submarine',    name:'Submarine',        icon:'🚢', desc:'5 auto-clicks / 1s',     baseCost:5000,  costMult:2.5, owned:0, isAuto:true, interval:1000, cpt:5 },
-  { id:'kraken',       name:'Tame the Kraken',  icon:'🐙', desc:'+50 fish per click',     baseCost:8000,  costMult:2.0, owned:0, effectVal:50  },
-  { id:'whirlpool',    name:'Whirlpool',        icon:'🌀', desc:'10 auto-clicks / 1s',    baseCost:15000, costMult:2.6, owned:0, isAuto:true, interval:1000, cpt:10 },
-  { id:'trident',      name:'Poseidon\'s Trident',icon:'🔱',desc:'+100 fish per click',   baseCost:25000, costMult:2.0, owned:0, effectVal:100 },
-  { id:'ocean_god',    name:'Ocean God',        icon:'🌊', desc:'20 auto-clicks / 0.5s',  baseCost:50000, costMult:2.8, owned:0, isAuto:true, interval:500,  cpt:20 },
+  { id:'flippers',     name:'Better Flippers',    icon:'🦭', desc:'+1 fish per click',       baseCost:15,     costMult:1.6,  owned:0, effectVal:1   },
+  { id:'bucket',       name:'Fish Bucket',        icon:'🪣', desc:'+3 fish per click',       baseCost:80,     costMult:1.7,  owned:0, effectVal:3   },
+  { id:'auto_pup',     name:'Seal Pup',           icon:'🐾', desc:'Auto-click every 3s',     baseCost:50,     costMult:1.9,  owned:0, isAuto:true, interval:3000, cpt:1 },
+  { id:'auto_colony',  name:'Seal Colony',        icon:'🌊', desc:'Auto-click every 2s',     baseCost:200,    costMult:2.1,  owned:0, isAuto:true, interval:2000, cpt:1 },
+  { id:'net',          name:'Fish Net',           icon:'🕸️', desc:'+5 fish per click',       baseCost:350,    costMult:1.8,  owned:0, effectVal:5   },
+  { id:'auto_orca',    name:'Trained Orca',       icon:'🐋', desc:'Auto-click every 1s',     baseCost:600,    costMult:2.3,  owned:0, isAuto:true, interval:1000, cpt:1 },
+  { id:'golden',       name:'Golden Fish',        icon:'✨', desc:'+10 fish per click',      baseCost:800,    costMult:2.1,  owned:0, effectVal:10  },
+  { id:'iceberg',      name:'Iceberg Base',       icon:'🧊', desc:'Auto-click every 0.5s',   baseCost:1200,   costMult:2.4,  owned:0, isAuto:true, interval:500,  cpt:1 },
+  { id:'sonar',        name:'Fish Sonar',         icon:'📡', desc:'+20 fish per click',      baseCost:2000,   costMult:2.1,  owned:0, effectVal:20  },
+  { id:'frenzy',       name:'Fish Frenzy',        icon:'🐟', desc:'3 auto-clicks / 1s',      baseCost:3000,   costMult:2.6,  owned:0, isAuto:true, interval:1000, cpt:3 },
+  { id:'mega',         name:'Mega Seal',          icon:'🦁', desc:'+25 fish per click',      baseCost:5000,   costMult:2.1,  owned:0, effectVal:25  },
+  { id:'submarine',    name:'Submarine',          icon:'🚢', desc:'5 auto-clicks / 1s',      baseCost:8000,   costMult:2.6,  owned:0, isAuto:true, interval:1000, cpt:5 },
+  { id:'kraken',       name:'Tame the Kraken',    icon:'🐙', desc:'+50 fish per click',      baseCost:12000,  costMult:2.1,  owned:0, effectVal:50  },
+  { id:'fish_factory', name:'Fish Factory',       icon:'🏭', desc:'10 auto-clicks / 1s',     baseCost:20000,  costMult:2.7,  owned:0, isAuto:true, interval:1000, cpt:10 },
+  { id:'fish_mine',    name:'Deep Sea Mine',      icon:'⛏️', desc:'+75 fish per click',      baseCost:30000,  costMult:2.2,  owned:0, effectVal:75  },
+  { id:'whirlpool',    name:'Whirlpool',          icon:'🌀', desc:'15 auto-clicks / 1s',     baseCost:50000,  costMult:2.8,  owned:0, isAuto:true, interval:1000, cpt:15 },
+  { id:'trident',      name:"Poseidon's Trident", icon:'🔱', desc:'+100 fish per click',     baseCost:75000,  costMult:2.2,  owned:0, effectVal:100 },
+  { id:'ocean_empire', name:'Ocean Empire',       icon:'🌊', desc:'25 auto-clicks / 0.5s',   baseCost:120000, costMult:2.9,  owned:0, isAuto:true, interval:500,  cpt:25 },
+  { id:'ocean_god',    name:'Ocean God',          icon:'🌟', desc:'+250 fish per click',     baseCost:200000, costMult:2.3,  owned:0, effectVal:250 },
+  { id:'seal_armada',  name:'Seal Armada',        icon:'⚓', desc:'50 auto-clicks / 0.5s',   baseCost:500000, costMult:3.0,  owned:0, isAuto:true, interval:500,  cpt:50 },
 ];
 
 const autoTimers = {};
@@ -511,7 +516,7 @@ function updateUI() {
   document.getElementById('perSec').textContent=ps>0?`+${fmt(ps)}/sec`:'';
   const raw=localStorage.getItem(SAVE_KEY);
   if (raw) { try { const d=JSON.parse(raw); const ago=Math.round((Date.now()-d.savedAt)/60000); document.getElementById('saveInfo').textContent=`Last save: ${ago<1?'just now':ago+'m ago'}`; } catch(e){} }
-  renderShop();
+  if (!mgRunning) renderShop();
 }
 
 // ── earn fish ─────────────────────────────────
@@ -806,15 +811,12 @@ function spawnMgFish() {
     el.classList.add('caught');
     mgCaught++;
     const earned = Math.max(1, Math.floor(fishPerClick * 0.5));
-    fish += earned; totalFish += earned;
+    fish += earned; totalFish += earned; totalClicks++;
+    // update score directly — don't call updateUI (would wipe the board)
     const s = document.getElementById('mgScore');
     if (s) s.textContent = `🐟 ${mgCaught}`;
-    spawnParticle(
-      el.getBoundingClientRect().left,
-      el.getBoundingClientRect().top,
-      false
-    );
-    updateUI();
+    document.getElementById('fishCount').textContent = fmt(fish);
+    document.getElementById('imgCurrencyVal').textContent = fmt(fish);
     setTimeout(() => el.remove(), 300);
   });
   board.appendChild(el);
@@ -831,6 +833,7 @@ function stopMinigame() {
   if (btn) btn.textContent = '▶ Play Again';
   const result = document.getElementById('mgResult');
   if (result && mgCaught > 0) result.textContent = `Caught ${mgCaught} fish! 🎉`;
+  updateUI();
 }
 
 (function() {
@@ -934,5 +937,6 @@ function stopMinigame() {
 loadGame();
 updateUI();
 </script>
+<!-- 🦭 made by Alexz -->
 </body>
 </html>
