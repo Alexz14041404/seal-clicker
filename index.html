@@ -30,7 +30,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 }
 #topbar h1 { font-family:'Boogaloo',cursive; font-size:1.5rem; color:var(--foam); letter-spacing:1px; }
 .topright { display:flex; align-items:center; gap:10px; }
-#perSec { font-size:0.78rem; color:rgba(249,228,183,0.5); font-weight:600; }
+#perSec { display:none; align-items:center; gap:6px; background:rgba(56,182,255,0.12); border:2px solid rgba(56,182,255,0.35); border-radius:30px; padding:4px 12px; font-family:'Boogaloo',cursive; font-size:1.1rem; color:#60c4ff; font-weight:700; }
 #wallet { display:flex; align-items:center; gap:6px; background:rgba(255,215,0,0.12); border:2px solid rgba(255,215,0,0.35); border-radius:30px; padding:4px 12px; }
 #wallet .coin { font-size:1.2rem; }
 #fishCount { font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--gold); min-width:50px; text-align:right; }
@@ -68,59 +68,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #clickerArea { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; gap:10px; overflow:hidden; }
 .seal-frame-wrap { position:relative; width:100%; display:flex; justify-content:center; align-items:center; }
 
-.side-counter {
-  position:absolute;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:2px;
-  pointer-events:none;
-  z-index:20;
-}
-.side-counter.left-counter  { right:calc(50% + min(170px, calc(50vw - 260px - 20px)) + 18px); }
-.side-counter.right-counter { left:calc(50% + min(170px, calc(50vw - 260px - 20px)) + 18px); }
-
-.counter-label {
-  font-family:'Permanent Marker', cursive;
-  font-size:0.6rem;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  opacity:0.75;
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.8);
-}
-.counter-value {
-  font-family:'Permanent Marker', cursive;
-  font-size:1.9rem;
-  line-height:1;
-  text-shadow:
-    2px 2px 0 rgba(0,0,0,0.9),
-    -1px -1px 0 rgba(0,0,0,0.8),
-     3px 3px 8px rgba(0,0,0,0.6);
-  transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
-}
-.counter-value.bump {
-  animation: counterBump 0.18s cubic-bezier(0.34,1.56,0.64,1);
-}
-@keyframes counterBump {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.35) rotate(-3deg); }
-  100% { transform: scale(1); }
-}
-.counter-sub {
-  font-family:'Permanent Marker', cursive;
-  font-size:0.55rem;
-  opacity:0.55;
-  letter-spacing:1px;
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
-}
-
-.left-counter .counter-label  { color:#ffe44d; }
-.left-counter .counter-value  { color:#ffd700; }
-.left-counter .counter-sub    { color:#ffe44d; }
-
-.right-counter .counter-label { color:#60c4ff; }
-.right-counter .counter-value { color:#38b6ff; }
-.right-counter .counter-sub   { color:#60c4ff; }
 
 #sealFrame {
   width:min(340px, calc(100vw - 520px - 40px));
@@ -137,8 +84,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 .placeholder { display:flex; flex-direction:column; align-items:center; gap:6px; color:rgba(232,244,253,0.35); font-size:0.85rem; font-weight:700; text-transform:uppercase; }
 .placeholder .big { font-size:60px; animation:wiggle 2s ease-in-out infinite; }
 @keyframes wiggle{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
-#imgCurrency { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.65); border:2px solid rgba(255,215,0,0.5); border-radius:20px; padding:3px 10px; display:flex; align-items:center; gap:4px; z-index:10; }
-#imgCurrencyVal { font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold); }
 .flash { position:absolute; inset:0; background:white; border-radius:13px; opacity:0; pointer-events:none; z-index:5; }
 .flash.go { animation:flashPop 0.3s ease-out forwards; }
 @keyframes flashPop{0%{opacity:0.55}100%{opacity:0}}
@@ -147,9 +92,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #caption { font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--sand); text-align:center; min-height:24px; }
 #clickHint { font-size:0.72rem; color:rgba(232,244,253,0.3); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
 
-.particle { position:fixed; pointer-events:none; z-index:200; font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--gold); font-weight:700; text-shadow:0 2px 4px rgba(0,0,0,0.5); animation:particleUp 0.85s ease-out forwards; }
-.particle.rare { color:var(--rare); font-size:1.3rem; }
-@keyframes particleUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-70px);opacity:0}}
+
 
 #shop { width:260px; flex-shrink:0; background:var(--shop-bg); border-left:2px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; overflow:hidden; }
 #shopHeader { padding:11px 14px 0; font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--foam); border-bottom:1px solid rgba(255,255,255,0.07); }
@@ -246,6 +189,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 
 .star { position:fixed; pointer-events:none; z-index:201; font-size:1.4rem; animation:starFloat 1.2s ease-out forwards; }
 @keyframes starFloat{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+
+.left-counter  .counter-label, .left-counter  .left-counter  .right-counter .counter-label, .right-counter .right-counter 
 </style>
 </head>
 <body>
@@ -303,7 +248,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 <div id="topbar">
   <h1>🦭 Seal Clicker</h1>
   <div class="topright">
-    <span id="perSec"></span>
+    <div id="perSec"><span>🐟</span><span id="perSecVal">0</span><span class="label">/sec</span></div>
     <div id="wallet">
       <span class="coin">🐟</span>
       <span id="fishCount">0</span>
@@ -318,27 +263,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
   <div id="clickerArea">
     <div class="seal-frame-wrap">
 
-      
-      <div class="side-counter left-counter" id="leftCounter">
-        <div class="counter-label">TOTAL</div>
-        <div class="counter-value" id="sideTotal">0</div>
-        <div class="counter-sub">🐟 EARNED</div>
-      </div>
 
       <div id="sealFrame">
         <div class="placeholder" id="placeholder"><span class="big">🦭</span><span>Loading...</span></div>
         <img id="sealImg" alt="seal" />
         <div class="flash" id="flash"></div>
         <div id="spinner"></div>
-        <div id="imgCurrency"><span>🐟</span><span id="imgCurrencyVal">0</span></div>
       </div>
 
-      
-      <div class="side-counter right-counter" id="rightCounter">
-        <div class="counter-label">PER CLICK</div>
-        <div class="counter-value" id="sideFpc">1</div>
-        <div class="counter-sub">🐟 / CLICK</div>
-      </div>
 
     </div>
     <div id="caption">Click the seal to earn 🐟 fish!</div>
@@ -484,17 +416,6 @@ function fmt(n) {
   return Math.floor(n);
 }
 
-function bumpCounter(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('bump');
-  void el.offsetWidth;
-  el.classList.add('bump');
-  setTimeout(() => el.classList.remove('bump'), 200);
-}
-
-let lastTotalFish = -1;
-let lastFpc = -1;
 
 const SAVE_KEY = 'sealclicker_save_v2';
 
@@ -535,28 +456,17 @@ setInterval(saveGame, 30000);
 
 function updateUI() {
   document.getElementById('fishCount').textContent=fmt(fish);
-  document.getElementById('imgCurrencyVal').textContent=fmt(fish);
   document.getElementById('statClicks').textContent=fmt(totalClicks);
   document.getElementById('statTotal').textContent=fmt(totalFish);
   document.getElementById('statSeals').textContent=sealsShown;
   document.getElementById('statFpc').textContent=fishPerClick;
   document.getElementById('statNiko').textContent=nikoVisits;
   const ps=calcPerSec();
-  document.getElementById('perSec').textContent=ps>0?`+${fmt(ps)}/sec`:'';
+  const _psEl=document.getElementById('perSec'); const _psVal=document.getElementById('perSecVal');
+  if(_psEl&&_psVal){ _psVal.textContent=fmt(ps); _psEl.style.display=ps>0?'flex':'none'; }
   const raw=localStorage.getItem(SAVE_KEY);
   if (raw) { try { const d=JSON.parse(raw); const ago=Math.round((Date.now()-d.savedAt)/60000); document.getElementById('saveInfo').textContent=`Last save: ${ago<1?'just now':ago+'m ago'}`; } catch(e){} }
 
-  
-  const sideTotalEl = document.getElementById('sideTotal');
-  const sideFpcEl   = document.getElementById('sideFpc');
-  if (sideTotalEl) {
-    const newTotal = fmt(totalFish);
-    if (newTotal !== lastTotalFish) { sideTotalEl.textContent = newTotal; if (lastTotalFish !== -1) bumpCounter('sideTotal'); lastTotalFish = newTotal; }
-  }
-  if (sideFpcEl) {
-    const newFpc = fmt(fishPerClick);
-    if (newFpc !== lastFpc) { sideFpcEl.textContent = newFpc; if (lastFpc !== -1) bumpCounter('sideFpc'); lastFpc = newFpc; }
-  }
 
   if (!mgRunning) renderShop();
 }
@@ -588,7 +498,6 @@ sealFrame.addEventListener('click', e => {
     totalFish += fishPerClick + ss.fishBonus;
     totalClicks++;
     if (ss.id==='niko') nikoVisits++;
-    spawnParticle(e.clientX, e.clientY, true, ss.fishBonus);
     showRarePopup(ss);
     sealImg.src = ss.url;
     sealImg.style.display = 'block';
@@ -600,7 +509,6 @@ sealFrame.addEventListener('click', e => {
     spawnRareStars(e.clientX, e.clientY);
   } else {
     earnFish(false);
-    spawnParticle(e.clientX, e.clientY);
     captionEl.textContent = captions[Math.floor(Math.random()*captions.length)];
     sealFrame.classList.remove('rare-frame');
     loadSeal(pick.url);
@@ -641,16 +549,6 @@ function closeRarePopup() {
   pendingRarePopup = false;
 }
 
-function spawnParticle(x, y, isRare=false, bonus=0) {
-  const p=document.createElement('div');
-  p.className='particle'+(isRare?' rare':'');
-  p.textContent = isRare ? `+${fishPerClick+bonus} 🐟✨` : `+${fishPerClick} 🐟`;
-  p.style.left=(x+(Math.random()-0.5)*30)+'px';
-  p.style.top=(y-10)+'px';
-  document.body.appendChild(p);
-  setTimeout(()=>p.remove(),900);
-}
-
 function spawnRareStars(x, y) {
   const emojis=['✨','💜','🌟','💫','🐟'];
   for (let i=0;i<8;i++) {
@@ -672,8 +570,6 @@ function showAutoPulse() {
   const old=sealFrame.querySelector('.autopulse'); if(old) old.remove();
   const d=document.createElement('div'); d.className='autopulse'; sealFrame.appendChild(d);
   setTimeout(()=>d.remove(),400);
-  const r=sealFrame.getBoundingClientRect();
-  spawnParticle(r.left+r.width/2+(Math.random()-0.5)*50, r.top+r.height/2+(Math.random()-0.5)*30);
 }
 
 function switchTab(tab) {
@@ -826,7 +722,6 @@ function spawnMgFish() {
     const s = document.getElementById('mgScore');
     if (s) s.textContent = `🐟 ${mgCaught}`;
     document.getElementById('fishCount').textContent = fmt(fish);
-    document.getElementById('imgCurrencyVal').textContent = fmt(fish);
     setTimeout(() => el.remove(), 300);
   });
   board.appendChild(el);
@@ -887,7 +782,10 @@ function stopMinigame() {
 
 loadGame();
 updateUI();
+
 </script>
 <!-- 🦭 made by Alexz -->
+
+
 </body>
 </html>
