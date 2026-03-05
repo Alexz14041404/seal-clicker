@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🦭 Seal Clicker</title>
-<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 :root {
@@ -16,12 +16,12 @@
 }
 html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); font-family:'Nunito',sans-serif; cursor:none; user-select:none; }
 
+
 #cursor { position:fixed; font-size:24px; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.05s; }
 #cursor.clicked { transform:translate(-50%,-50%) scale(0.7); }
 
 #bgCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; width:100%; height:100%; }
 
-/* TOP BAR */
 #topbar {
   position:relative; z-index:100; height:52px; flex-shrink:0;
   display:flex; align-items:center; justify-content:space-between;
@@ -36,11 +36,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #fishCount { font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--gold); min-width:50px; text-align:right; }
 #wallet .label { font-size:0.7rem; color:rgba(249,228,183,0.55); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
 
-/* SAVE TOAST */
 #saveToast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:rgba(78,203,113,0.92); color:#071e33; font-family:'Boogaloo',cursive; font-size:1rem; padding:8px 20px; border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,0.4); z-index:500; opacity:0; pointer-events:none; transition:opacity 0.3s; }
 #saveToast.show { opacity:1; }
 
-/* RARE POPUP — left side toast, no overlay */
 #rarePopup {
   position:fixed; left:16px; bottom:80px; z-index:400;
   pointer-events:none; opacity:0;
@@ -65,12 +63,65 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #rareFish { font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold); }
 #rareClose { display:none; }
 
-/* MAIN */
 #main { position:relative; z-index:10; display:flex; height:calc(100vh - 52px); overflow:hidden; }
 
-/* CLICKER */
 #clickerArea { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; gap:10px; overflow:hidden; }
-.seal-frame-wrap { position:relative; width:100%; display:flex; justify-content:center; }
+.seal-frame-wrap { position:relative; width:100%; display:flex; justify-content:center; align-items:center; }
+
+.side-counter {
+  position:absolute;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  pointer-events:none;
+  z-index:20;
+}
+.side-counter.left-counter  { right:calc(50% + min(170px, calc(50vw - 260px - 20px)) + 18px); }
+.side-counter.right-counter { left:calc(50% + min(170px, calc(50vw - 260px - 20px)) + 18px); }
+
+.counter-label {
+  font-family:'Permanent Marker', cursive;
+  font-size:0.6rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  opacity:0.75;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8), -1px -1px 0 rgba(0,0,0,0.8);
+}
+.counter-value {
+  font-family:'Permanent Marker', cursive;
+  font-size:1.9rem;
+  line-height:1;
+  text-shadow:
+    2px 2px 0 rgba(0,0,0,0.9),
+    -1px -1px 0 rgba(0,0,0,0.8),
+     3px 3px 8px rgba(0,0,0,0.6);
+  transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
+}
+.counter-value.bump {
+  animation: counterBump 0.18s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes counterBump {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.35) rotate(-3deg); }
+  100% { transform: scale(1); }
+}
+.counter-sub {
+  font-family:'Permanent Marker', cursive;
+  font-size:0.55rem;
+  opacity:0.55;
+  letter-spacing:1px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
+}
+
+.left-counter .counter-label  { color:#ffe44d; }
+.left-counter .counter-value  { color:#ffd700; }
+.left-counter .counter-sub    { color:#ffe44d; }
+
+.right-counter .counter-label { color:#60c4ff; }
+.right-counter .counter-value { color:#38b6ff; }
+.right-counter .counter-sub   { color:#60c4ff; }
+
 #sealFrame {
   width:min(340px, calc(100vw - 520px - 40px));
   aspect-ratio:1/1; border-radius:18px; border:4px solid var(--sand);
@@ -96,12 +147,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #caption { font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--sand); text-align:center; min-height:24px; }
 #clickHint { font-size:0.72rem; color:rgba(232,244,253,0.3); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
 
-/* PARTICLES */
 .particle { position:fixed; pointer-events:none; z-index:200; font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--gold); font-weight:700; text-shadow:0 2px 4px rgba(0,0,0,0.5); animation:particleUp 0.85s ease-out forwards; }
 .particle.rare { color:var(--rare); font-size:1.3rem; }
 @keyframes particleUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-70px);opacity:0}}
 
-/* SHOP TABS */
 #shop { width:260px; flex-shrink:0; background:var(--shop-bg); border-left:2px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; overflow:hidden; }
 #shopHeader { padding:11px 14px 0; font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--foam); border-bottom:1px solid rgba(255,255,255,0.07); }
 .tab-row { display:flex; gap:0; margin-top:8px; }
@@ -134,8 +183,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 .affordable{color:var(--green);}
 .too-expensive{color:rgba(232,244,253,0.28);}
 .rare-chance { font-size:0.62rem; color:var(--rare); font-weight:700; letter-spacing:0.5px; margin-top:1px; }
-
-/* seal preview thumbnail in shop */
 .seal-thumb { width:100%; height:130px; object-fit:contain; border-radius:10px; background:rgba(0,0,0,0.3); margin-bottom:5px; border:2px solid rgba(192,132,252,0.25); }
 
 #statsBar { padding:9px 12px; border-top:1px solid rgba(255,255,255,0.07); font-size:0.68rem; color:rgba(232,244,253,0.3); font-weight:600; line-height:1.8; display:flex; flex-direction:column; gap:0; }
@@ -144,18 +191,15 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #saveBtn:hover { background:rgba(78,203,113,0.35); }
 #saveInfo { font-size:0.62rem; color:rgba(78,203,113,0.45); }
 
-/* splashes */
 .splash{position:fixed;font-family:'Boogaloo',cursive;font-size:1.8rem;color:var(--sand);text-shadow:0 2px 10px rgba(0,0,0,0.5);pointer-events:none;z-index:300;animation:splashAnim 1s ease-out forwards;}
 .splash.rare-splash { color:var(--rare); font-size:2.2rem; text-shadow:0 0 20px rgba(168,85,247,0.8); }
 @keyframes splashAnim{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}100%{transform:translate(-50%,-250%) scale(0.8);opacity:0}}
 .autopulse{position:absolute;inset:0;border-radius:13px;border:3px solid rgba(78,203,113,0.55);pointer-events:none;z-index:7;animation:autoPing 0.4s ease-out forwards;}
 @keyframes autoPing{0%{opacity:0.9;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
 
-/* SETTINGS BTN */
 #settingsBtn { font-size:1.1rem; background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.15); color:var(--foam); border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; }
 #settingsBtn:hover { background:rgba(255,255,255,0.18); }
 
-/* SETTINGS PANEL */
 #settingsPanel {
   position:fixed; top:52px; right:0; bottom:0; width:300px; z-index:300;
   background:rgba(5,18,32,0.97); border-left:2px solid rgba(255,255,255,0.08);
@@ -171,42 +215,27 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #settingsBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
 .settings-section { display:flex; flex-direction:column; gap:8px; }
 .settings-label { font-family:'Boogaloo',cursive; font-size:0.95rem; color:rgba(232,244,253,0.5); letter-spacing:1px; text-transform:uppercase; }
-
-/* Discord btn */
 #discordBtn { display:flex; align-items:center; justify-content:space-between; background:rgba(88,101,242,0.18); border:1.5px solid rgba(88,101,242,0.4); border-radius:12px; padding:10px 14px; color:var(--foam); text-decoration:none; font-family:'Boogaloo',cursive; font-size:1rem; transition:background 0.2s; cursor:none; }
 #discordBtn:hover { background:rgba(88,101,242,0.35); }
-
-/* Settings rows */
 .settings-row { display:flex; align-items:center; gap:8px; }
 .settings-hint { flex:1; font-size:0.8rem; color:rgba(232,244,253,0.5); font-weight:600; }
 .settings-row input[type=range] { flex:1; accent-color:var(--gold); cursor:none; }
 #soundVolVal { font-size:0.72rem; color:rgba(232,244,253,0.35); min-width:22px; }
-
-/* Toggle switch */
 .toggle { position:relative; width:38px; height:22px; flex-shrink:0; }
 .toggle input { opacity:0; width:0; height:0; }
 .toggle-slider { position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:22px; border:1.5px solid rgba(255,255,255,0.15); transition:background 0.2s; }
 .toggle-slider:before { content:''; position:absolute; width:14px; height:14px; left:3px; top:50%; transform:translateY(-50%); background:rgba(232,244,253,0.5); border-radius:50%; transition:transform 0.2s, background 0.2s; }
 .toggle input:checked + .toggle-slider { background:rgba(255,215,0,0.25); border-color:rgba(255,215,0,0.5); }
 .toggle input:checked + .toggle-slider:before { transform:translate(16px,-50%); background:var(--gold); }
-/* MINIGAME */
+
 #minigame { width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; padding:8px 0; }
 #mgTitle { font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--foam); }
 #mgDesc { font-size:0.72rem; color:rgba(232,244,253,0.4); text-align:center; line-height:1.5; }
-#mgBoard {
-  position:relative; width:220px; height:220px;
-  background:rgba(0,0,0,0.35); border:2px solid rgba(255,255,255,0.1);
-  border-radius:14px; overflow:hidden; cursor:none;
-}
+#mgBoard { position:relative; width:220px; height:220px; background:rgba(0,0,0,0.35); border:2px solid rgba(255,255,255,0.1); border-radius:14px; overflow:hidden; cursor:none; }
 #mgTimer { font-family:'Boogaloo',cursive; font-size:0.9rem; color:var(--sand); }
 #mgScore { font-family:'Boogaloo',cursive; font-size:0.9rem; color:var(--gold); }
 #mgRow { display:flex; gap:12px; align-items:center; }
-#mgStartBtn {
-  font-family:'Boogaloo',cursive; font-size:1rem;
-  background:rgba(78,203,113,0.2); border:2px solid rgba(78,203,113,0.5);
-  color:var(--green); border-radius:12px; padding:7px 20px;
-  cursor:none; transition:background 0.2s;
-}
+#mgStartBtn { font-family:'Boogaloo',cursive; font-size:1rem; background:rgba(78,203,113,0.2); border:2px solid rgba(78,203,113,0.5); color:var(--green); border-radius:12px; padding:7px 20px; cursor:none; transition:background 0.2s; }
 #mgStartBtn:hover { background:rgba(78,203,113,0.4); }
 #mgResult { font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold); min-height:20px; text-align:center; }
 .mg-fish { position:absolute; font-size:1.4rem; cursor:none; animation:mgWobble 0.5s ease-in-out infinite alternate; }
@@ -221,11 +250,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 </head>
 <body>
 
+
 <div id="cursor">🦭</div>
 <canvas id="bgCanvas"></canvas>
 <div id="saveToast">💾 Game Saved!</div>
 
-<!-- RARE POPUP -->
 <div id="rarePopup">
   <div id="rareCard">
     <img id="rareImg" src="" alt="rare seal" />
@@ -239,15 +268,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
   </div>
 </div>
 
-<!-- SETTINGS PANEL -->
 <div id="settingsPanel">
   <div id="settingsHeader">
     <span>⚙️ Settings</span>
     <button id="settingsClose" onclick="toggleSettings()">✕</button>
   </div>
   <div id="settingsBody">
-
-    <!-- Discord -->
     <div class="settings-section">
       <div class="settings-label">💬 Community</div>
       <a href="https://discord.gg/3JQhMWMTW4" target="_blank" id="discordBtn">
@@ -255,8 +281,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
         <span style="font-size:0.75rem;opacity:0.6">↗</span>
       </a>
     </div>
-
-    <!-- Click Sound -->
     <div class="settings-section">
       <div class="settings-label">🔊 Click Sound</div>
       <div class="settings-row">
@@ -273,11 +297,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
       </div>
       <div style="font-size:0.68rem;color:rgba(232,244,253,0.2);margin-top:2px;">🎵 Sound file coming soon</div>
     </div>
-
   </div>
 </div>
 
-<!-- TOP BAR -->
 <div id="topbar">
   <h1>🦭 Seal Clicker</h1>
   <div class="topright">
@@ -291,11 +313,18 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
   </div>
 </div>
 
-<!-- MAIN -->
 <div id="main">
-  <!-- CLICKER -->
+  
   <div id="clickerArea">
     <div class="seal-frame-wrap">
+
+      
+      <div class="side-counter left-counter" id="leftCounter">
+        <div class="counter-label">TOTAL</div>
+        <div class="counter-value" id="sideTotal">0</div>
+        <div class="counter-sub">🐟 EARNED</div>
+      </div>
+
       <div id="sealFrame">
         <div class="placeholder" id="placeholder"><span class="big">🦭</span><span>Loading...</span></div>
         <img id="sealImg" alt="seal" />
@@ -303,12 +332,20 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
         <div id="spinner"></div>
         <div id="imgCurrency"><span>🐟</span><span id="imgCurrencyVal">0</span></div>
       </div>
+
+      
+      <div class="side-counter right-counter" id="rightCounter">
+        <div class="counter-label">PER CLICK</div>
+        <div class="counter-value" id="sideFpc">1</div>
+        <div class="counter-sub">🐟 / CLICK</div>
+      </div>
+
     </div>
     <div id="caption">Click the seal to earn 🐟 fish!</div>
     <div id="clickHint">Click the seal • Buy upgrades in the shop →</div>
   </div>
 
-  <!-- SHOP -->
+  
   <div id="shop">
     <div id="shopHeader">
       🏪 Shop
@@ -332,18 +369,16 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 </div>
 
 <script>
-// ── cursor ──────────────────────────────────
+
 const cursor = document.getElementById('cursor');
 document.addEventListener('mousemove', e => { cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
 
-// ── state ────────────────────────────────────
 let fish=0, totalFish=0, totalClicks=0, sealsShown=0, nikoVisits=0;
 let fishPerClick=1;
 let currentTab = 'upgrades';
 let lastSealWasRare = false;
 let pendingRarePopup = false;
 
-// ── seal pools ────────────────────────────────
 const normalSeals = [
   "https://i.pinimg.com/736x/eb/95/a8/eb95a876b71a18ccd0341b758d757a3f.jpg",
   "https://i.pinimg.com/1200x/e8/8f/16/e88f16f5fbfb8a9fc244f9f723cb5766.jpg",
@@ -354,65 +389,49 @@ const normalSeals = [
   "https://i.pinimg.com/736x/49/ab/34/49ab34eb701d6b31ea8d77249c3c6669.jpg",
   "https://i.pinimg.com/736x/d4/23/07/d4230780e830a07f00e8b9d9714aeaba.jpg",
   "https://i.pinimg.com/1200x/40/90/f0/4090f01dc84cc935fa27c9afc7abbf02.jpg",
+  "https://i.pinimg.com/736x/f3/d9/22/f3d9220d0b28f1535802346ecfabc693.jpg",
+  "https://i.pinimg.com/736x/d8/95/9f/d8959f691a33112c6955ec3a9ad7e987.jpg",
+  "https://i.pinimg.com/736x/a8/9b/5d/a89b5daa4c1e0659549a9822fce5b2a5.jpg",
+  "https://i.pinimg.com/736x/95/f2/bc/95f2bc80ec41eec358119fd0969261a0.jpg",
+  "https://i.pinimg.com/736x/28/70/f3/2870f3e05950cc0df54922a61c37382c.jpg",
+  "https://i.pinimg.com/736x/05/39/91/0539913a2360749fba7ea2c6592b5a31.jpg",
 ];
 
 const specialSeals = [
   {
-    id: 'niko',
-    name: 'Sleepy Niko',
-    icon: '😴',
+    id: 'niko', name: 'Sleepy Niko', icon: '😴',
     url: "https://i.pinimg.com/1200x/12/13/0f/12130fa8937cb34ed4fc60cc8b973da3.jpg",
-    chance: 1/40,
-    fishBonus: 7,
-    messages: [
-      '"zzz... still caught you a fish tho 🐟"',
-      '"just five more minutes... 💤"',
-      '"i dreamed of fish. here. 🐟"',
-      '"niko is sleepy but niko loves you 💙"',
-      '"woke up just for you 🥱"',
-      '"...huh? oh, fish. yeah. 🐟💤"',
-    ],
-    cost: 100,
-    costMult: 3,
-    owned: 0,
-    rarity: '1/40 chance',
+    chance: 1/40, fishBonus: 7,
+    messages: ['"zzz... still caught you a fish tho 🐟"','"just five more minutes... 💤"','"i dreamed of fish. here. 🐟"','"niko is sleepy but niko loves you 💙"','"woke up just for you 🥱"','"...huh? oh, fish. yeah. 🐟💤"'],
+    cost: 100, costMult: 3, owned: 0, rarity: '1/40 chance',
   },
   {
-    id: 'hootie',
-    name: 'Hootie',
-    icon: '🦉',
+    id: 'hootie', name: 'Hootie', icon: '🦉',
     url: "https://i.pinimg.com/736x/0e/57/83/0e5783ece88579ed545bbcc7d67cee68.jpg",
-    chance: 1/80,
-    fishBonus: 15,
-    messages: [
-      '"hoot hoot... here\'s your fish 🐟"',
-      '"who? who gave you fish? me. 🦉"',
-      '"a wise seal delivers fish 🐟"',
-      '"hoooooot 🦉✨"',
-      '"i see all. i give fish. 🦉"',
-    ],
-    cost: 290,
-    costMult: 3,
-    owned: 0,
-    rarity: '1/80 chance',
+    chance: 1/80, fishBonus: 15,
+    messages: ['"hoot hoot... here\'s your fish 🐟"','"who? who gave you fish? me. 🦉"','"a wise seal delivers fish 🐟"','"hoooooot 🦉✨"','"i see all. i give fish. 🦉"'],
+    cost: 290, costMult: 3, owned: 0, rarity: '1/80 chance',
   },
-  // Add more special seals here!
+  {
+    id: 'sorry', name: 'Sorry Seal', icon: '🥺',
+    url: "https://i.pinimg.com/736x/e3/d8/ed/e3d8ed8336de86bb89554d401989870c.jpg",
+    chance: 1/100, fishBonus: 50,
+    messages: ['"i\'m so sorry... here\'s a fish 🐟"','"please forgive me 🥺🐟"','"i didn\'t mean it... 🐟"','"sorrysorrysorry 🥺"','"this fish is an apology 🐟"','"i\'m sorry okay 🥺🐟"'],
+    cost: 560, costMult: 3, owned: 0, rarity: '1/100 chance',
+  },
 ];
 
 let deck = [];
 function refill() { deck = [...normalSeals].sort(() => Math.random() - 0.5); }
 refill();
 function nextNormal() { if (!deck.length) refill(); return deck.pop(); }
-
 function pickSeal() {
-  // Check special seals
   for (const ss of specialSeals) {
     if (ss.owned > 0 && Math.random() < ss.chance) return { type:'special', seal:ss };
   }
   return { type:'normal', url: nextNormal() };
 }
 
-// ── upgrades shop items ───────────────────────
 const upgradeItems = [
   { id:'flippers',     name:'Better Flippers',    icon:'🦭', desc:'+1 fish per click',       baseCost:15,     costMult:1.6,  owned:0, effectVal:1   },
   { id:'bucket',       name:'Fish Bucket',        icon:'🪣', desc:'+3 fish per click',       baseCost:80,     costMult:1.7,  owned:0, effectVal:3   },
@@ -465,7 +484,18 @@ function fmt(n) {
   return Math.floor(n);
 }
 
-// ── save / load ───────────────────────────────
+function bumpCounter(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('bump');
+  void el.offsetWidth;
+  el.classList.add('bump');
+  setTimeout(() => el.classList.remove('bump'), 200);
+}
+
+let lastTotalFish = -1;
+let lastFpc = -1;
+
 const SAVE_KEY = 'sealclicker_save_v2';
 
 function saveGame() {
@@ -503,7 +533,6 @@ function showSaveToast() {
 }
 setInterval(saveGame, 30000);
 
-// ── update UI ─────────────────────────────────
 function updateUI() {
   document.getElementById('fishCount').textContent=fmt(fish);
   document.getElementById('imgCurrencyVal').textContent=fmt(fish);
@@ -516,17 +545,26 @@ function updateUI() {
   document.getElementById('perSec').textContent=ps>0?`+${fmt(ps)}/sec`:'';
   const raw=localStorage.getItem(SAVE_KEY);
   if (raw) { try { const d=JSON.parse(raw); const ago=Math.round((Date.now()-d.savedAt)/60000); document.getElementById('saveInfo').textContent=`Last save: ${ago<1?'just now':ago+'m ago'}`; } catch(e){} }
+
+  
+  const sideTotalEl = document.getElementById('sideTotal');
+  const sideFpcEl   = document.getElementById('sideFpc');
+  if (sideTotalEl) {
+    const newTotal = fmt(totalFish);
+    if (newTotal !== lastTotalFish) { sideTotalEl.textContent = newTotal; if (lastTotalFish !== -1) bumpCounter('sideTotal'); lastTotalFish = newTotal; }
+  }
+  if (sideFpcEl) {
+    const newFpc = fmt(fishPerClick);
+    if (newFpc !== lastFpc) { sideFpcEl.textContent = newFpc; if (lastFpc !== -1) bumpCounter('sideFpc'); lastFpc = newFpc; }
+  }
+
   if (!mgRunning) renderShop();
 }
 
-// ── earn fish ─────────────────────────────────
 const captions = [
   "Nice catch! 🐟","Seal approved! 🦭","Splash! 🌊","Arf arf! 🎉",
   "More fish! 🐟","He loves you 💙","Legendary click ✨","Keep going! 🏆",
   "Fish secured 🪣","10/10 seal 😭","Ocean vibes 🌊","He said yes! 💚"
-];
-const rareCaptions = [
-  "IT'S NIKO!! 😭","Sleepy Niko appeared! 💜","Niko!! 🥹✨","RARE!! 💜🐟",
 ];
 
 function earnFish(isAuto=false, bonus=0) {
@@ -536,7 +574,6 @@ function earnFish(isAuto=false, bonus=0) {
   if (isAuto) showAutoPulse();
 }
 
-// ── clicker ───────────────────────────────────
 const sealFrame=document.getElementById('sealFrame');
 const sealImg=document.getElementById('sealImg');
 const placeholder=document.getElementById('placeholder');
@@ -545,17 +582,14 @@ const captionEl=document.getElementById('caption');
 
 sealFrame.addEventListener('click', e => {
   const pick = pickSeal();
-
   if (pick.type === 'special') {
     const ss = pick.seal;
-    // Give fish + bonus immediately
     fish += fishPerClick + ss.fishBonus;
     totalFish += fishPerClick + ss.fishBonus;
     totalClicks++;
     if (ss.id==='niko') nikoVisits++;
     spawnParticle(e.clientX, e.clientY, true, ss.fishBonus);
     showRarePopup(ss);
-    // also show on frame
     sealImg.src = ss.url;
     sealImg.style.display = 'block';
     sealImg.classList.add('rare-img');
@@ -571,7 +605,6 @@ sealFrame.addEventListener('click', e => {
     sealFrame.classList.remove('rare-frame');
     loadSeal(pick.url);
   }
-
   cursor.classList.add('clicked');
   playClickSound();
   setTimeout(()=>cursor.classList.remove('clicked'),120);
@@ -587,11 +620,9 @@ function loadSeal(src) {
   t.src=src;
 }
 
-// boot load
 const first = pickSeal();
 loadSeal(first.type==='normal' ? first.url : normalSeals[0]);
 
-// ── rare popup ────────────────────────────────
 let rareTimer = null;
 function showRarePopup(ss) {
   const msg = ss.messages[Math.floor(Math.random()*ss.messages.length)];
@@ -610,7 +641,6 @@ function closeRarePopup() {
   pendingRarePopup = false;
 }
 
-// ── particles ─────────────────────────────────
 function spawnParticle(x, y, isRare=false, bonus=0) {
   const p=document.createElement('div');
   p.className='particle'+(isRare?' rare':'');
@@ -646,7 +676,6 @@ function showAutoPulse() {
   spawnParticle(r.left+r.width/2+(Math.random()-0.5)*50, r.top+r.height/2+(Math.random()-0.5)*30);
 }
 
-// ── shop tabs ─────────────────────────────────
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tabUpgrades').classList.toggle('active', tab==='upgrades');
@@ -656,11 +685,9 @@ function switchTab(tab) {
   renderShop();
 }
 
-// ── shop render ───────────────────────────────
 function renderShop() {
   const list=document.getElementById('shopList');
   list.innerHTML='';
-
   if (currentTab==='upgrades') {
     for (const item of upgradeItems) {
       const cost=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned));
@@ -732,25 +759,12 @@ function spawnSplash(text, isRare=false) {
   setTimeout(()=>w.remove(),1100);
 }
 
-// ── settings ──────────────────────────────────
-function toggleSettings() {
-  document.getElementById('settingsPanel').classList.toggle('open');
-}
-
-// ── click sound settings ───────────────────────
-let soundEnabled = true;
-let soundVolume = 60;
-
+function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
+let soundEnabled = true, soundVolume = 60;
 function toggleSound(val) { soundEnabled = val; }
 function setSoundVol(v) { soundVolume = parseInt(v); document.getElementById('soundVolVal').textContent = v; }
+function playClickSound() { if (!soundEnabled) return; }
 
-// Placeholder — swap this AudioBuffer for your real sound file later
-function playClickSound() {
-  if (!soundEnabled) return;
-  // TODO: replace with real audio file
-  // e.g: const audio = new Audio('click.mp3'); audio.volume = soundVolume/100; audio.play();
-}
-// ── minigame ───────────────────────────────────
 let mgRunning = false, mgTimeLeft = 0, mgCaught = 0;
 let mgInterval = null, mgFishInterval = null, mgSealInterval = null;
 const MG_DURATION = 15;
@@ -782,16 +796,13 @@ function startMinigame() {
   sealEl.className = 'mg-seal'; sealEl.textContent = '🦭'; sealEl.id = 'mgSeal';
   sealEl.style.left = '90px'; sealEl.style.top = '90px';
   board.appendChild(sealEl);
-
   mgInterval = setInterval(() => {
     mgTimeLeft--;
     const t = document.getElementById('mgTimer');
     if (t) t.textContent = `⏱ ${mgTimeLeft}s`;
     if (mgTimeLeft <= 0) stopMinigame();
   }, 1000);
-
   mgFishInterval = setInterval(() => spawnMgFish(), 700);
-
   mgSealInterval = setInterval(() => {
     const s = document.getElementById('mgSeal');
     if (s) { s.style.left=(10+Math.random()*170)+'px'; s.style.top=(10+Math.random()*170)+'px'; }
@@ -812,7 +823,6 @@ function spawnMgFish() {
     mgCaught++;
     const earned = Math.max(1, Math.floor(fishPerClick * 0.5));
     fish += earned; totalFish += earned; totalClicks++;
-    // update score directly — don't call updateUI (would wipe the board)
     const s = document.getElementById('mgScore');
     if (s) s.textContent = `🐟 ${mgCaught}`;
     document.getElementById('fishCount').textContent = fmt(fish);
@@ -839,101 +849,42 @@ function stopMinigame() {
 (function() {
   const canvas = document.getElementById('bgCanvas');
   const ctx = canvas.getContext('2d');
-
   function resize() { canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
-
-  // colour stops for deep ocean gradient
   const bubbles = [];
   const BUBBLE_COUNT = 55;
-
   function randBubble() {
-    return {
-      x: Math.random() * canvas.width,
-      y: canvas.height + Math.random() * 200,
-      r: 2 + Math.random() * 14,
-      speed: 0.4 + Math.random() * 1.2,
-      drift: (Math.random() - 0.5) * 0.4,
-      opacity: 0.06 + Math.random() * 0.18,
-      wobble: Math.random() * Math.PI * 2,
-      wobbleSpeed: 0.01 + Math.random() * 0.02,
-    };
+    return { x: Math.random() * canvas.width, y: canvas.height + Math.random() * 200, r: 2 + Math.random() * 14, speed: 0.4 + Math.random() * 1.2, drift: (Math.random() - 0.5) * 0.4, opacity: 0.06 + Math.random() * 0.18, wobble: Math.random() * Math.PI * 2, wobbleSpeed: 0.01 + Math.random() * 0.02 };
   }
-  for (let i = 0; i < BUBBLE_COUNT; i++) {
-    const b = randBubble();
-    b.y = Math.random() * canvas.height; // spread on start
-    bubbles.push(b);
-  }
-
-  // light rays array
-  const rays = Array.from({length:6}, (_,i) => ({
-    x: (canvas.width / 6) * i + Math.random() * 120,
-    width: 30 + Math.random() * 60,
-    opacity: 0.02 + Math.random() * 0.04,
-    speed: 0.003 + Math.random() * 0.004,
-    phase: Math.random() * Math.PI * 2,
-  }));
-
+  for (let i = 0; i < BUBBLE_COUNT; i++) { const b = randBubble(); b.y = Math.random() * canvas.height; bubbles.push(b); }
+  const rays = Array.from({length:6}, (_,i) => ({ x: (canvas.width / 6) * i + Math.random() * 120, width: 30 + Math.random() * 60, opacity: 0.02 + Math.random() * 0.04, speed: 0.003 + Math.random() * 0.004, phase: Math.random() * Math.PI * 2 }));
   function draw() {
     const W = canvas.width, H = canvas.height;
-
-    // deep ocean gradient background
     const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0,   '#051525');
-    grad.addColorStop(0.3, '#072035');
-    grad.addColorStop(0.7, '#0a2a4a');
-    grad.addColorStop(1,   '#0d3560');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-
-    // subtle light rays from top
+    grad.addColorStop(0,'#051525'); grad.addColorStop(0.3,'#072035'); grad.addColorStop(0.7,'#0a2a4a'); grad.addColorStop(1,'#0d3560');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
     rays.forEach(ray => {
       ray.phase += ray.speed;
       const alpha = ray.opacity * (0.6 + 0.4 * Math.sin(ray.phase));
       const rg = ctx.createLinearGradient(ray.x, 0, ray.x + ray.width * 0.3, H * 0.75);
-      rg.addColorStop(0,   `rgba(100,180,255,${alpha})`);
-      rg.addColorStop(1,   `rgba(100,180,255,0)`);
-      ctx.beginPath();
-      ctx.moveTo(ray.x, 0);
-      ctx.lineTo(ray.x + ray.width, 0);
-      ctx.lineTo(ray.x + ray.width * 0.5 + 40, H * 0.75);
-      ctx.lineTo(ray.x - 20, H * 0.75);
-      ctx.closePath();
-      ctx.fillStyle = rg;
-      ctx.fill();
+      rg.addColorStop(0, `rgba(100,180,255,${alpha})`); rg.addColorStop(1, `rgba(100,180,255,0)`);
+      ctx.beginPath(); ctx.moveTo(ray.x, 0); ctx.lineTo(ray.x + ray.width, 0); ctx.lineTo(ray.x + ray.width * 0.5 + 40, H * 0.75); ctx.lineTo(ray.x - 20, H * 0.75); ctx.closePath();
+      ctx.fillStyle = rg; ctx.fill();
     });
-
-    // bubbles
     bubbles.forEach(b => {
-      b.y -= b.speed;
-      b.wobble += b.wobbleSpeed;
-      b.x += b.drift + Math.sin(b.wobble) * 0.4;
-
-      if (b.y + b.r < 0) {
-        Object.assign(b, randBubble());
-        b.x = Math.random() * W;
-      }
-
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(150,210,255,${b.opacity})`;
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // small shine dot inside
-      ctx.beginPath();
-      ctx.arc(b.x - b.r*0.3, b.y - b.r*0.3, b.r*0.25, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(220,240,255,${b.opacity * 0.8})`;
-      ctx.fill();
+      b.y -= b.speed; b.wobble += b.wobbleSpeed; b.x += b.drift + Math.sin(b.wobble) * 0.4;
+      if (b.y + b.r < 0) { Object.assign(b, randBubble()); b.x = Math.random() * W; }
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(150,210,255,${b.opacity})`; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(b.x - b.r*0.3, b.y - b.r*0.3, b.r*0.25, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(220,240,255,${b.opacity * 0.8})`; ctx.fill();
     });
-
     requestAnimationFrame(draw);
   }
   draw();
 })();
 
-// ── boot ──────────────────────────────────────
 loadGame();
 updateUI();
 </script>
