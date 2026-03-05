@@ -157,6 +157,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 .shop-item.rare-item { border-color:rgba(192,132,252,0.2); padding:12px 13px; }
 .shop-item.rare-item.can-afford { border-color:rgba(192,132,252,0.6); }
 .shop-item.rare-item.can-afford:hover { background:rgba(168,85,247,0.1); }
+.shop-item.rebirth-locked { border-color:rgba(249,115,22,0.2); background:rgba(249,115,22,0.03); cursor:not-allowed; }
+.shop-item.rebirth-locked:hover { transform:none; background:rgba(249,115,22,0.05); border-color:rgba(249,115,22,0.3); }
 .shop-item.owned-seal { border-color:rgba(78,203,113,0.5); background:rgba(78,203,113,0.05); }
 @keyframes buyPop{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
 .item-top{display:flex;align-items:center;justify-content:space-between;}
@@ -490,6 +492,18 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
       </div>
       <div id="codeMsg" style="font-size:0.7rem;font-weight:700;min-height:16px;margin-top:2px;"></div>
     </div>
+    <div class="settings-section">
+      <div class="settings-label">⚠️ Danger Zone</div>
+      <button id="deleteSaveBtn" onclick="confirmDeleteSave()" style="font-family:'Boogaloo',cursive;font-size:0.95rem;background:rgba(255,107,107,0.1);border:1.5px solid rgba(255,107,107,0.4);color:#ff6b6b;border-radius:10px;padding:9px 14px;cursor:none;transition:background 0.2s;width:100%;" onmouseover="this.style.background='rgba(255,107,107,0.22)'" onmouseout="this.style.background='rgba(255,107,107,0.1)'">🗑️ Delete Save</button>
+      <div id="deleteSaveConfirm" style="display:none;flex-direction:column;gap:8px;background:rgba(255,107,107,0.08);border:1.5px solid rgba(255,107,107,0.35);border-radius:12px;padding:12px 14px;">
+        <div style="font-family:'Boogaloo',cursive;font-size:1rem;color:#ff6b6b;text-align:center;">⚠️ Are you sure?</div>
+        <div style="font-size:0.72rem;color:rgba(232,244,253,0.5);font-weight:600;text-align:center;line-height:1.6;">This will <b style="color:#ff6b6b;">permanently delete</b> all your progress.<br>Fish, upgrades, rebirths — everything. Gone.</div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="cancelDeleteSave()" style="flex:1;font-family:'Boogaloo',cursive;font-size:0.9rem;padding:8px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(232,244,253,0.5);cursor:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">✕ Cancel</button>
+          <button onclick="doDeleteSave()" style="flex:1;font-family:'Boogaloo',cursive;font-size:0.9rem;padding:8px;border-radius:10px;border:1.5px solid rgba(255,107,107,0.6);background:rgba(255,107,107,0.18);color:#ff6b6b;cursor:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,107,107,0.35)'" onmouseout="this.style.background='rgba(255,107,107,0.18)'">🗑️ Yes, delete it</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -780,33 +794,84 @@ let rebirthCount = 0;
 let isRebirthing = false;
 
 // How many RC you'd earn if you rebirthed now
+function calcRebirthCost() {
+  // Base cost 10K fish, doubles each rebirth
+  return Math.floor(10000 * Math.pow(2, rebirthCount));
+}
+
 function calcRebirthCoins() {
-  return Math.floor(Math.sqrt(totalFish / 1000));
+  return Math.floor(Math.sqrt(totalFish / 1000) * rebirthCoinMult);
 }
 
 const rebirthUpgrades = [
-  { id:'rc_click1',   icon:'👆', name:'Click Power I',     desc:'+1 fish/click permanently',     cost:2,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=1; } },
-  { id:'rc_click2',   icon:'💪', name:'Click Power II',    desc:'+3 fish/click permanently',     cost:5,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=3; } },
-  { id:'rc_click3',   icon:'🔱', name:'Click Power III',   desc:'+10 fish/click permanently',    cost:12, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=10; } },
-  { id:'rc_click4',   icon:'⚡', name:'Click Power IV',    desc:'+50 fish/click permanently',    cost:30, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=50; } },
-  { id:'rc_click5',   icon:'🌟', name:'Click Power V',     desc:'+200 fish/click permanently',   cost:80, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=200; } },
-  { id:'rc_multi',    icon:'✖️', name:'Fish Multiplier',   desc:'All fish earnings ×1.25',       cost:8,  maxOwned:3,  owned:0, apply:()=>{ rebirthMultiplier*=1.25; } },
-  { id:'rc_auto',     icon:'⚙️', name:'Auto Boost',        desc:'Auto-clickers 15% faster',      cost:6,  maxOwned:3,  owned:0, apply:()=>{ rebirthAutoMult*=0.85; } },
-  { id:'rc_lucky',    icon:'🍀', name:'Lucky Aura',        desc:'Rare seal chances +5%',         cost:10, maxOwned:4,  owned:0, apply:()=>{ rebirthLuckMult*=1.05; } },
-  { id:'rc_start',    icon:'🎁', name:'Head Start',        desc:'Start each run with 250 fish',  cost:5,  maxOwned:4,  owned:0, apply:()=>{ rebirthStartFish+=250; } },
-  { id:'rc_prestige', icon:'👑', name:'Prestige Aura',     desc:'Shop costs 8% cheaper',         cost:15, maxOwned:2,  owned:0, apply:()=>{ rebirthCostMult*=0.92; } },
+  // ── Tier 1 (no rebirth required) ─────────────────────────────────────────
+  { id:'rc_click1',    icon:'👆', name:'Click Power I',        desc:'+1 fish/click permanently',          cost:3,    maxOwned:1,  owned:0, reqRebirth:0, apply:()=>{ fishPerClick+=1; } },
+  { id:'rc_start',     icon:'🎁', name:'Head Start',           desc:'Start each run with 250 fish',       cost:5,    maxOwned:4,  owned:0, reqRebirth:0, apply:()=>{ rebirthStartFish+=250; } },
+  { id:'rc_auto',      icon:'⚙️', name:'Auto Boost',           desc:'Auto-clickers 15% faster',           cost:8,    maxOwned:3,  owned:0, reqRebirth:0, apply:()=>{ rebirthAutoMult*=0.85; } },
+  { id:'rc_lucky',     icon:'🍀', name:'Lucky Aura',           desc:'Rare seal chances +5%',              cost:12,   maxOwned:4,  owned:0, reqRebirth:0, apply:()=>{ rebirthLuckMult*=1.05; } },
+  // ── Tier 2 (requires 1 rebirth) ──────────────────────────────────────────
+  { id:'rc_click2',    icon:'💪', name:'Click Power II',       desc:'+3 fish/click permanently',          cost:10,   maxOwned:1,  owned:0, reqRebirth:1, apply:()=>{ fishPerClick+=3; } },
+  { id:'rc_click3',    icon:'🔱', name:'Click Power III',      desc:'+10 fish/click permanently',         cost:25,   maxOwned:1,  owned:0, reqRebirth:1, apply:()=>{ fishPerClick+=10; } },
+  { id:'rc_multi',     icon:'✖️', name:'Fish Multiplier',      desc:'All fish earnings ×1.25',            cost:20,   maxOwned:3,  owned:0, reqRebirth:1, apply:()=>{ rebirthMultiplier*=1.25; } },
+  { id:'rc_start2',    icon:'🏦', name:'Rich Start',           desc:'Start each run with 2,000 fish',     cost:30,   maxOwned:3,  owned:0, reqRebirth:1, apply:()=>{ rebirthStartFish+=2000; } },
+  { id:'rc_prestige',  icon:'👑', name:'Prestige Aura',        desc:'Shop costs 8% cheaper',              cost:35,   maxOwned:2,  owned:0, reqRebirth:1, apply:()=>{ rebirthCostMult*=0.92; } },
+  { id:'rc_coins',     icon:'🔥', name:'Coin Greed',           desc:'Earn 10% more Rebirth Coins',        cost:40,   maxOwned:5,  owned:0, reqRebirth:1, apply:()=>{ rebirthCoinMult*=1.1; } },
+  { id:'rc_minigame',  icon:'🎮', name:'Gamer',                desc:'Minigame fish value ×1.5',           cost:22,   maxOwned:3,  owned:0, reqRebirth:1, apply:()=>{ rebirthMgMult*=1.5; } },
+  { id:'rc_event',     icon:'🎪', name:'Event Expert',         desc:'Event entry costs 20% less fish',    cost:28,   maxOwned:3,  owned:0, reqRebirth:1, apply:()=>{ rebirthEventCostMult*=0.8; } },
+  // ── Tier 3 (requires 2 rebirths) ─────────────────────────────────────────
+  { id:'rc_click4',    icon:'⚡', name:'Click Power IV',       desc:'+50 fish/click permanently',         cost:60,   maxOwned:1,  owned:0, reqRebirth:2, apply:()=>{ fishPerClick+=50; } },
+  { id:'rc_click5',    icon:'🌟', name:'Click Power V',        desc:'+200 fish/click permanently',        cost:150,  maxOwned:1,  owned:0, reqRebirth:2, apply:()=>{ fishPerClick+=200; } },
+  { id:'rc_multi2',    icon:'💎', name:'Fish Multiplier II',   desc:'All fish earnings ×1.5',             cost:80,   maxOwned:3,  owned:0, reqRebirth:2, apply:()=>{ rebirthMultiplier*=1.5; } },
+  { id:'rc_auto2',     icon:'🚀', name:'Auto Boost II',        desc:'Auto-clickers 25% faster',           cost:70,   maxOwned:2,  owned:0, reqRebirth:2, apply:()=>{ rebirthAutoMult*=0.75; } },
+  { id:'rc_lucky2',    icon:'🎰', name:'Lucky Aura II',        desc:'Rare seal chances +15%',             cost:90,   maxOwned:2,  owned:0, reqRebirth:2, apply:()=>{ rebirthLuckMult*=1.15; } },
+  { id:'rc_start3',    icon:'💰', name:'Loaded Start',         desc:'Start each run with 10,000 fish',    cost:100,  maxOwned:2,  owned:0, reqRebirth:2, apply:()=>{ rebirthStartFish+=10000; } },
+  { id:'rc_prestige2', icon:'💸', name:'Prestige Aura II',     desc:'Shop costs 15% cheaper',             cost:120,  maxOwned:2,  owned:0, reqRebirth:2, apply:()=>{ rebirthCostMult*=0.85; } },
+  { id:'rc_seal',      icon:'🦭', name:'Seal Whisperer',       desc:'Special seals give +25% bonus fish', cost:80,   maxOwned:3,  owned:0, reqRebirth:2, apply:()=>{ rebirthSealBonus*=1.25; } },
+  // ── Tier 4 (requires 3 rebirths) ─────────────────────────────────────────
+  { id:'rc_click6',    icon:'💥', name:'Click Power VI',       desc:'+500 fish/click permanently',        cost:300,  maxOwned:1,  owned:0, reqRebirth:3, apply:()=>{ fishPerClick+=500; } },
+  { id:'rc_click7',    icon:'🌊', name:'Click Power VII',      desc:'+1,000 fish/click permanently',      cost:700,  maxOwned:1,  owned:0, reqRebirth:3, apply:()=>{ fishPerClick+=1000; } },
+  { id:'rc_multi3',    icon:'👁️', name:'Fish Multiplier III',  desc:'All fish earnings ×2',               cost:200,  maxOwned:2,  owned:0, reqRebirth:3, apply:()=>{ rebirthMultiplier*=2; } },
+  { id:'rc_auto3',     icon:'⚡', name:'Auto Boost III',       desc:'Auto-clickers 40% faster',           cost:180,  maxOwned:2,  owned:0, reqRebirth:3, apply:()=>{ rebirthAutoMult*=0.6; } },
+  { id:'rc_coins2',    icon:'💫', name:'Coin Greed II',        desc:'Earn 25% more Rebirth Coins',        cost:200,  maxOwned:3,  owned:0, reqRebirth:3, apply:()=>{ rebirthCoinMult*=1.25; } },
+  { id:'rc_minigame2', icon:'🕹️', name:'Gamer II',             desc:'Minigame fish value ×3',             cost:160,  maxOwned:2,  owned:0, reqRebirth:3, apply:()=>{ rebirthMgMult*=3; } },
+  // ── Tier 5 (requires 5 rebirths) ─────────────────────────────────────────
+  { id:'rc_click8',    icon:'🌀', name:'Click Power VIII',     desc:'+5,000 fish/click permanently',      cost:1500, maxOwned:1,  owned:0, reqRebirth:5, apply:()=>{ fishPerClick+=5000; } },
+  { id:'rc_click9',    icon:'☄️', name:'Click Power IX',       desc:'+20,000 fish/click permanently',     cost:4000, maxOwned:1,  owned:0, reqRebirth:5, apply:()=>{ fishPerClick+=20000; } },
+  { id:'rc_multi4',    icon:'🔮', name:'Fish Multiplier IV',   desc:'All fish earnings ×3',               cost:500,  maxOwned:2,  owned:0, reqRebirth:5, apply:()=>{ rebirthMultiplier*=3; } },
+  { id:'rc_auto4',     icon:'🤖', name:'Robot Factory',        desc:'Auto-clickers 2× output',            cost:600,  maxOwned:1,  owned:0, reqRebirth:5, apply:()=>{ rebirthAutoMult*=0.5; } },
+  { id:'rc_lucky3',    icon:'🌠', name:'Lucky Aura III',       desc:'Rare seal chances +50%',             cost:400,  maxOwned:1,  owned:0, reqRebirth:5, apply:()=>{ rebirthLuckMult*=1.5; } },
+  { id:'rc_start4',    icon:'🐋', name:'Ocean Head Start',     desc:'Start each run with 100,000 fish',   cost:450,  maxOwned:2,  owned:0, reqRebirth:5, apply:()=>{ rebirthStartFish+=100000; } },
+  { id:'rc_prestige3', icon:'🎖️', name:'Prestige Aura III',    desc:'Shop costs 25% cheaper',             cost:500,  maxOwned:2,  owned:0, reqRebirth:5, apply:()=>{ rebirthCostMult*=0.75; } },
+  { id:'rc_seal2',     icon:'🐬', name:'Ocean Bond',           desc:'Special seals give ×2 bonus fish',   cost:400,  maxOwned:2,  owned:0, reqRebirth:5, apply:()=>{ rebirthSealBonus*=2; } },
+  { id:'rc_fpc_pct',   icon:'📈', name:'Compound Clicks',      desc:'Each click earns +1% of total fish', cost:600,  maxOwned:1,  owned:0, reqRebirth:5, apply:()=>{ rebirthCompoundClick=true; } },
+  // ── Tier 6 (requires 8 rebirths) ─────────────────────────────────────────
+  { id:'rc_multi5',    icon:'🌌', name:'Cosmic Multiplier',    desc:'All fish earnings ×5',               cost:1500, maxOwned:1,  owned:0, reqRebirth:8, apply:()=>{ rebirthMultiplier*=5; } },
+  { id:'rc_lucky4',    icon:'🎆', name:'Miracle Aura',         desc:'Rare seal chances ×2',               cost:1000, maxOwned:1,  owned:0, reqRebirth:8, apply:()=>{ rebirthLuckMult*=2; } },
+  { id:'rc_start5',    icon:'🏰', name:'Kingdom Start',        desc:'Start each run with 1,000,000 fish', cost:1200, maxOwned:1,  owned:0, reqRebirth:8, apply:()=>{ rebirthStartFish+=1000000; } },
+  { id:'rc_coins3',    icon:'🏆', name:'Coin Emperor',         desc:'Earn 2× Rebirth Coins',              cost:1000, maxOwned:1,  owned:0, reqRebirth:8, apply:()=>{ rebirthCoinMult*=2; } },
+  { id:'rc_event2',    icon:'🎡', name:'Event Master',         desc:'Event entry is FREE',                cost:800,  maxOwned:1,  owned:0, reqRebirth:8, apply:()=>{ rebirthEventCostMult*=0; } },
+  { id:'rc_double',    icon:'♾️', name:'Double Dip',           desc:'Every 10th click earns double fish', cost:900,  maxOwned:1,  owned:0, reqRebirth:8, apply:()=>{ rebirthDoubleDip=true; } },
 ];
 
 // Rebirth multipliers (applied globally)
 let rebirthMultiplier = 1;
-let rebirthAutoMult   = 1; // interval divisor
+let rebirthAutoMult   = 1;
 let rebirthLuckMult   = 1;
 let rebirthStartFish  = 0;
 let rebirthCostMult   = 1;
+let rebirthCoinMult   = 1;
+let rebirthEventCostMult = 1;
+let rebirthMgMult     = 1;
+let rebirthSealBonus  = 1;
+let rebirthCompoundClick = false;
+let rebirthDoubleDip  = false;
+let rebirthClickCount = 0;
 
 function applyAllRebirthUpgrades() {
   rebirthMultiplier = 1; rebirthAutoMult = 1;
   rebirthLuckMult = 1; rebirthStartFish = 0; rebirthCostMult = 1;
+  rebirthCoinMult = 1; rebirthEventCostMult = 1; rebirthMgMult = 1; rebirthSealBonus = 1;
+  rebirthCompoundClick = false; rebirthDoubleDip = false;
   fishPerClick = 1; // base, will be adjusted by normal upgrades too
   for (const ru of rebirthUpgrades) {
     for (let i = 0; i < ru.owned; i++) ru.apply();
@@ -815,7 +880,11 @@ function applyAllRebirthUpgrades() {
 
 function openRebirthModal() {
   const coins = calcRebirthCoins();
-  document.getElementById('rmCoinsPreview').textContent = `You'll receive: ${coins} 🔥 Rebirth Coins`;
+  const cost = calcRebirthCost();
+  const canAfford = fish >= cost;
+  document.getElementById('rmCoinsPreview').innerHTML =
+    `You'll receive: <b>${coins} 🔥</b> Rebirth Coins<br>` +
+    `<span style="font-size:0.85em;color:${canAfford?'#ff6b6b':'#ff3333'}">Cost: ${fmt(cost)} 🐟 ${canAfford?'':'(need more fish!)'}</span>`;
   document.getElementById('rebirthConfirm').classList.add('show');
 }
 function closeRebirthModal() {
@@ -823,10 +892,12 @@ function closeRebirthModal() {
 }
 
 function doRebirth() {
+  const cost = calcRebirthCost();
+  if (fish < cost) { wallySay('Not enough fish to rebirth! 🐟'); closeRebirthModal(); return; }
   const earned = calcRebirthCoins();
   rebirthCoins += earned;
   rebirthCount++;
-  // Reset
+  // Reset (fish starts at 0 — cost already paid from the run)
   fish = 0; totalFish = 0; totalClicks = 0; sealsShown = 0;
   nikoVisits = 0; hootieVisits = 0; luckyVisits = 0; sorryVisits = 0;
   mgTotalCaught = 0;
@@ -867,7 +938,8 @@ function renderRebirth() {
     </div>
     <div style="font-size:0.68rem;color:rgba(232,244,253,0.35);font-weight:600;">Rebirths: ${rebirthCount} &nbsp;|&nbsp; Next rebirth: +${coins} 🔥</div>
     <div style="font-size:0.65rem;color:rgba(249,115,22,0.5);font-weight:600;">Earn coins = √(total fish ÷ 1,000)</div>
-    <button onclick="openRebirthModal()" style="font-family:'Boogaloo',cursive;font-size:0.95rem;padding:8px;border-radius:10px;border:2px solid rgba(249,115,22,0.6);background:rgba(249,115,22,0.15);color:var(--rebirth);cursor:none;transition:background 0.2s;margin-top:2px;" onmouseover="this.style.background='rgba(249,115,22,0.3)'" onmouseout="this.style.background='rgba(249,115,22,0.15)'">${coins > 0 ? `🔄 Rebirth (+${coins} 🔥)` : `🔄 Rebirth (need more fish)`}</button>`;
+    <div style="font-size:0.65rem;font-weight:700;color:${fish>=calcRebirthCost()?'#ff6b6b':'#ff3333'};">Cost to rebirth: ${fmt(calcRebirthCost())} 🐟 ${fish>=calcRebirthCost()?'✅':'❌'}</div>
+    <button onclick="openRebirthModal()" style="font-family:'Boogaloo',cursive;font-size:0.95rem;padding:8px;border-radius:10px;border:2px solid rgba(249,115,22,0.6);background:rgba(249,115,22,0.15);color:var(--rebirth);cursor:none;transition:background 0.2s;margin-top:2px;" onmouseover="this.style.background='rgba(249,115,22,0.3)'" onmouseout="this.style.background='rgba(249,115,22,0.15)'">${fish>=calcRebirthCost() ? `🔄 Rebirth (+${coins} 🔥)` : `🔄 Need ${fmt(calcRebirthCost())} 🐟`}</button>`;
   wrap.appendChild(header);
 
   // Upgrades label
@@ -876,33 +948,59 @@ function renderRebirth() {
   lbl.textContent = '🔥 Rebirth Upgrades';
   wrap.appendChild(lbl);
 
+  // Group by tier
+  let lastTier = -1;
   for (const ru of rebirthUpgrades) {
+    const req = ru.reqRebirth || 0;
+    const locked = rebirthCount < req;
     const maxed = ru.owned >= ru.maxOwned;
-    const canAfford = !maxed && rebirthCoins >= ru.cost;
+    const canAfford = !locked && !maxed && rebirthCoins >= ru.cost;
+
+    // Tier label
+    if (req !== lastTier) {
+      lastTier = req;
+      const tierLbl = document.createElement('div');
+      tierLbl.style.cssText = 'font-family:"Boogaloo",cursive;font-size:0.68rem;color:rgba(249,115,22,0.45);letter-spacing:1.2px;text-transform:uppercase;padding:6px 2px 2px;';
+      tierLbl.textContent = req === 0 ? '⭐ Starter Upgrades' : `🔄 Requires ${req} Rebirth${req>1?'s':''}`;
+      wrap.appendChild(tierLbl);
+    }
+
     const div = document.createElement('div');
-    div.className = 'rc-item' + (maxed ? ' rc-maxed' : canAfford ? ' rc-affordable' : '');
-    div.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <span class="rc-name">${ru.icon} ${ru.name}</span>
-        <span class="rc-owned">${ru.owned}/${ru.maxOwned}</span>
-      </div>
-      <div class="rc-desc">${ru.desc}</div>
-      <div class="rc-cost">
-        <span>🔥</span>
-        <span style="color:${maxed?'rgba(78,203,113,0.7)':canAfford?'#4ecb71':'rgba(232,244,253,0.28)'}">${maxed ? 'MAXED' : ru.cost}</span>
-      </div>`;
-    if (!maxed) {
-      div.addEventListener('click', () => {
-        if (rebirthCoins < ru.cost || ru.owned >= ru.maxOwned) return;
-        rebirthCoins -= ru.cost;
-        ru.owned++;
-        ru.apply();
-        recalcFpc();
-        div.classList.add('buying'); setTimeout(() => div.classList.remove('buying'), 250);
-        spawnSplash(ru.icon + ' unlocked!', true);
-        wallySay('Rebirth upgrade! 🔥');
-        updateUI();
-      });
+    if (locked) {
+      div.className = 'rc-item';
+      div.style.cssText = 'opacity:0.35;cursor:default;border-color:rgba(255,255,255,0.06);';
+      div.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="rc-name" style="color:rgba(232,244,253,0.4);">${ru.icon} ${ru.name}</span>
+          <span style="font-family:'Boogaloo',cursive;font-size:0.72rem;color:rgba(249,115,22,0.5);background:rgba(249,115,22,0.08);border-radius:6px;padding:1px 7px;">🔄 ${req} rebirths</span>
+        </div>
+        <div class="rc-desc">${ru.desc}</div>
+        <div style="font-size:0.62rem;color:rgba(249,115,22,0.4);font-weight:700;margin-top:2px;">Locked until ${req} rebirth${req>1?'s':''}</div>`;
+    } else {
+      div.className = 'rc-item' + (maxed ? ' rc-maxed' : canAfford ? ' rc-affordable' : '');
+      div.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="rc-name">${ru.icon} ${ru.name}</span>
+          <span class="rc-owned">${ru.owned}/${ru.maxOwned}</span>
+        </div>
+        <div class="rc-desc">${ru.desc}</div>
+        <div class="rc-cost">
+          <span>🔥</span>
+          <span style="color:${maxed?'rgba(78,203,113,0.7)':canAfford?'#4ecb71':'rgba(232,244,253,0.28)'}">${maxed ? 'MAXED' : ru.cost}</span>
+        </div>`;
+      if (!maxed) {
+        div.addEventListener('click', () => {
+          if (rebirthCoins < ru.cost || ru.owned >= ru.maxOwned) return;
+          rebirthCoins -= ru.cost;
+          ru.owned++;
+          ru.apply();
+          recalcFpc();
+          div.classList.add('buying'); setTimeout(() => div.classList.remove('buying'), 250);
+          spawnSplash(ru.icon + ' unlocked!', true);
+          wallySay('Rebirth upgrade! 🔥');
+          updateUI();
+        });
+      }
     }
     wrap.appendChild(div);
   }
@@ -931,18 +1029,18 @@ const upgradeItems = [
   { id:'auto_orca',    name:'Trained Orca',       icon:'🐋', desc:'Auto-click every 1s',     baseCost:600,    costMult:2.3,  owned:0, isAuto:true, interval:1000, cpt:1 },
   { id:'golden',       name:'Golden Fish',        icon:'✨', desc:'+10 fish per click',      baseCost:800,    costMult:2.1,  owned:0, effectVal:10  },
   { id:'iceberg',      name:'Iceberg Base',       icon:'🧊', desc:'Auto-click every 0.5s',   baseCost:1200,   costMult:2.4,  owned:0, isAuto:true, interval:500,  cpt:1 },
-  { id:'sonar',        name:'Fish Sonar',         icon:'📡', desc:'+20 fish per click',      baseCost:2000,   costMult:2.1,  owned:0, effectVal:20  },
-  { id:'frenzy',       name:'Fish Frenzy',        icon:'🐟', desc:'3 auto-clicks / 1s',      baseCost:3000,   costMult:2.6,  owned:0, isAuto:true, interval:1000, cpt:3 },
-  { id:'mega',         name:'Mega Seal',          icon:'🦁', desc:'+25 fish per click',      baseCost:5000,   costMult:2.1,  owned:0, effectVal:25  },
-  { id:'submarine',    name:'Submarine',          icon:'🚢', desc:'5 auto-clicks / 1s',      baseCost:8000,   costMult:2.6,  owned:0, isAuto:true, interval:1000, cpt:5 },
-  { id:'kraken',       name:'Tame the Kraken',    icon:'🐙', desc:'+50 fish per click',      baseCost:12000,  costMult:2.1,  owned:0, effectVal:50  },
-  { id:'fish_factory', name:'Fish Factory',       icon:'🏭', desc:'10 auto-clicks / 1s',     baseCost:20000,  costMult:2.7,  owned:0, isAuto:true, interval:1000, cpt:10 },
-  { id:'fish_mine',    name:'Deep Sea Mine',      icon:'⛏️', desc:'+75 fish per click',      baseCost:30000,  costMult:2.2,  owned:0, effectVal:75  },
-  { id:'whirlpool',    name:'Whirlpool',          icon:'🌀', desc:'15 auto-clicks / 1s',     baseCost:50000,  costMult:2.8,  owned:0, isAuto:true, interval:1000, cpt:15 },
-  { id:'trident',      name:"Poseidon's Trident", icon:'🔱', desc:'+100 fish per click',     baseCost:75000,  costMult:2.2,  owned:0, effectVal:100 },
-  { id:'ocean_empire', name:'Ocean Empire',       icon:'🌊', desc:'25 auto-clicks / 0.5s',   baseCost:120000, costMult:2.9,  owned:0, isAuto:true, interval:500,  cpt:25 },
-  { id:'ocean_god',    name:'Ocean God',          icon:'🌟', desc:'+250 fish per click',     baseCost:200000, costMult:2.3,  owned:0, effectVal:250 },
-  { id:'seal_armada',  name:'Seal Armada',        icon:'⚓', desc:'50 auto-clicks / 0.5s',   baseCost:500000, costMult:3.0,  owned:0, isAuto:true, interval:500,  cpt:50 },
+  { id:'sonar',        name:'Fish Sonar',         icon:'📡', desc:'+20 fish per click',      baseCost:2000,   costMult:2.1,  owned:0, effectVal:20,  reqRebirth:1  },
+  { id:'frenzy',       name:'Fish Frenzy',        icon:'🐟', desc:'3 auto-clicks / 1s',      baseCost:3000,   costMult:2.6,  owned:0, isAuto:true, interval:1000, cpt:3, reqRebirth:1 },
+  { id:'mega',         name:'Mega Seal',          icon:'🦁', desc:'+25 fish per click',      baseCost:5000,   costMult:2.1,  owned:0, effectVal:25,  reqRebirth:1  },
+  { id:'submarine',    name:'Submarine',          icon:'🚢', desc:'5 auto-clicks / 1s',      baseCost:8000,   costMult:2.6,  owned:0, isAuto:true, interval:1000, cpt:5, reqRebirth:2 },
+  { id:'kraken',       name:'Tame the Kraken',    icon:'🐙', desc:'+50 fish per click',      baseCost:12000,  costMult:2.1,  owned:0, effectVal:50,  reqRebirth:2  },
+  { id:'fish_factory', name:'Fish Factory',       icon:'🏭', desc:'10 auto-clicks / 1s',     baseCost:20000,  costMult:2.7,  owned:0, isAuto:true, interval:1000, cpt:10, reqRebirth:3 },
+  { id:'fish_mine',    name:'Deep Sea Mine',      icon:'⛏️', desc:'+75 fish per click',      baseCost:30000,  costMult:2.2,  owned:0, effectVal:75,  reqRebirth:3  },
+  { id:'whirlpool',    name:'Whirlpool',          icon:'🌀', desc:'15 auto-clicks / 1s',     baseCost:50000,  costMult:2.8,  owned:0, isAuto:true, interval:1000, cpt:15, reqRebirth:4 },
+  { id:'trident',      name:"Poseidon's Trident", icon:'🔱', desc:'+100 fish per click',     baseCost:75000,  costMult:2.2,  owned:0, effectVal:100, reqRebirth:4  },
+  { id:'ocean_empire', name:'Ocean Empire',       icon:'🌊', desc:'25 auto-clicks / 0.5s',   baseCost:120000, costMult:2.9,  owned:0, isAuto:true, interval:500,  cpt:25, reqRebirth:5 },
+  { id:'ocean_god',    name:'Ocean God',          icon:'🌟', desc:'+250 fish per click',     baseCost:200000, costMult:2.3,  owned:0, effectVal:250, reqRebirth:5  },
+  { id:'seal_armada',  name:'Seal Armada',        icon:'⚓', desc:'50 auto-clicks / 0.5s',   baseCost:500000, costMult:3.0,  owned:0, isAuto:true, interval:500,  cpt:50, reqRebirth:6 },
 ];
 
 const autoTimers = {};
@@ -1064,7 +1162,11 @@ const captions = [
 
 let _uiThrottle = null;
 function earnFish(isAuto=false, bonus=0) {
-  const earned = Math.floor((fishPerClick + bonus) * rebirthMultiplier);
+  rebirthClickCount++;
+  let clickMult = 1;
+  if (rebirthDoubleDip && rebirthClickCount % 10 === 0) clickMult = 2;
+  const compoundBonus = rebirthCompoundClick ? Math.floor(totalFish * 0.01) : 0;
+  const earned = Math.floor((fishPerClick + bonus + compoundBonus) * rebirthMultiplier * clickMult);
   fish += earned; totalFish += earned; totalClicks++;
   if (eventState==='active') { eventClicks++; if(eventClicks>=EVENT_GOAL){ clearInterval(eventTimer); eventTimer=null; eventState='complete'; fish+=EVENT_REWARD; totalFish+=EVENT_REWARD; spawnSplash('🏆 EVENT COMPLETE! +500K 🐟',true); wallySay('INCREDIBLE!! 🏆🐟🐟🐟'); stopMusic(); updateUI(); return; } }
   if (isAuto) { showAutoPulse(); if(!_uiThrottle) _uiThrottle=setTimeout(()=>{ updateUI(); _uiThrottle=null; },100); }
@@ -1081,8 +1183,8 @@ sealFrame.addEventListener('click', e => {
   const pick = pickSeal();
   if (pick.type === 'special') {
     const ss = pick.seal;
-    fish += fishPerClick + ss.fishBonus;
-    totalFish += fishPerClick + ss.fishBonus;
+    fish += fishPerClick + Math.floor(ss.fishBonus * rebirthSealBonus);
+    totalFish += fishPerClick + Math.floor(ss.fishBonus * rebirthSealBonus);
     totalClicks++;
     if (eventState==='active') eventClicks++;
     if (ss.id==='niko') nikoVisits++;
@@ -1266,18 +1368,25 @@ function renderShop() {
   list.innerHTML='';
   if (currentTab==='upgrades') {
     for (const item of upgradeItems) {
+      const locked = item.reqRebirth && rebirthCount < item.reqRebirth;
       const cost=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned)*rebirthCostMult);
-      const can=fish>=cost;
+      const can=!locked && fish>=cost;
       const div=document.createElement('div');
-      div.className='shop-item'+(can?' can-afford':'');
-      div.innerHTML=`
+      div.className='shop-item'+(locked?' rebirth-locked':can?' can-afford':'');
+      div.innerHTML= locked ? `
+        <div class="item-top">
+          <span class="item-name" style="opacity:0.35;">${item.icon} ${item.name}</span>
+          <span style="font-family:'Boogaloo',cursive;font-size:0.75rem;color:rgba(249,115,22,0.6);background:rgba(249,115,22,0.1);border-radius:6px;padding:1px 7px;">🔄 ${item.reqRebirth} rebirth${item.reqRebirth>1?'s':''}</span>
+        </div>
+        <div class="item-desc" style="opacity:0.3;">${item.desc}</div>
+        <div style="font-size:0.65rem;color:rgba(249,115,22,0.45);font-weight:700;margin-top:2px;">Requires ${item.reqRebirth} rebirth${item.reqRebirth>1?'s':''} to unlock</div>` : `
         <div class="item-top">
           <span class="item-name">${item.icon} ${item.name}</span>
           <span class="item-owned">${item.owned}</span>
         </div>
         <div class="item-desc">${item.desc}</div>
         <div class="item-cost"><span>🐟</span><span class="${can?'affordable':'too-expensive'}">${fmt(cost)}</span></div>`;
-      div.addEventListener('click',()=>{
+      if (!locked) div.addEventListener('click',()=>{
         const c=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned));
         if(fish<c) return;
         fish-=c; item.owned++;
@@ -1408,8 +1517,9 @@ let eventTimer = null;
 let eventClicksAtStart = 0;
 
 function startEvent() {
-  if (fish < EVENT_COST) { wallyRandom('broke'); return; }
-  fish -= EVENT_COST;
+  const actualEventCost = rebirthEventCostMult === 0 ? 0 : Math.floor(EVENT_COST * rebirthEventCostMult);
+  if (fish < actualEventCost) { wallyRandom('broke'); return; }
+  fish -= actualEventCost;
   eventState = 'active';
   eventClicks = 0;
   eventTimeLeft = EVENT_DURATION;
@@ -1610,11 +1720,7 @@ function renderBizarreShop() {
 
 // ── CODES ─────────────────────────────────────────────────────────────────────
 const CODES = {
-  'NIKOTIME':   { reward:'seal', sealId:'niko',    msg:'😴 Sleepy Niko unlocked!' },
-  'HOOTIE':     { reward:'seal', sealId:'hootie',  msg:'🦉 Hootie unlocked!' },
-  'SORRYSEAL':  { reward:'seal', sealId:'sorry',   msg:'🥺 Sorry Seal unlocked!' },
-  'FEELLUCKY':  { reward:'seal', sealId:'lucky',   msg:'🍀 Lucky Seal unlocked!' },
-  'JOJO':       { reward:'seal', sealId:'bizarre', msg:'🌀 ZA WARUDO... Bizarre Seal unlocked!!' },
+  'JOJO': { reward:'seal', sealId:'bizarre', msg:'🌀 ZA WARUDO... Bizarre Seal unlocked!!' },
 };
 const usedCodes = new Set();
 
@@ -1636,6 +1742,19 @@ function redeemCode() {
   spawnSplash('🎟️ Code redeemed!', true);
   if (def.sealId) { switchTab('seals'); toggleSettings(); }
   saveGame(); updateUI();
+}
+
+function confirmDeleteSave() {
+  document.getElementById('deleteSaveBtn').style.display = 'none';
+  document.getElementById('deleteSaveConfirm').style.display = 'flex';
+}
+function cancelDeleteSave() {
+  document.getElementById('deleteSaveConfirm').style.display = 'none';
+  document.getElementById('deleteSaveBtn').style.display = 'block';
+}
+function doDeleteSave() {
+  localStorage.removeItem('sealclicker_save_v2');
+  location.reload();
 }
 
 function showCodeMsg(text, color) {
@@ -1969,7 +2088,7 @@ function spawnMgFish() {
     el.classList.add('caught');
     mgCaught++;
     mgTotalCaught++;
-    const earned = Math.max(1, Math.floor(fishPerClick * 0.5));
+    const earned = Math.max(1, Math.floor(fishPerClick * 0.5 * rebirthMgMult));
     fish += earned; totalFish += earned; totalClicks++;
     const s = document.getElementById('mgScore');
     if (s) s.textContent = `🐟 ${mgCaught}`;
