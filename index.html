@@ -94,20 +94,57 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 
 
 
-#shop { width:260px; flex-shrink:0; background:var(--shop-bg); border-left:2px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; overflow:hidden; }
-#shopHeader { padding:11px 14px 0; font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--foam); border-bottom:1px solid rgba(255,255,255,0.07); }
-.tab-row { display:flex; gap:0; margin-top:8px; }
-.tab { flex:1; font-family:'Boogaloo',cursive; font-size:0.85rem; padding:6px 0; text-align:center; color:rgba(232,244,253,0.4); border-bottom:2px solid transparent; cursor:none; transition:color 0.2s, border-color 0.2s; }
-.tab.active { color:var(--foam); border-color:var(--gold); }
-.tab:hover { color:rgba(232,244,253,0.8); }
-.tab.rare-tab.active { color:var(--rare); border-color:var(--rare); }
+#shop { width:280px; flex-shrink:0; background:var(--shop-bg); border-left:2px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; overflow:hidden; }
 
-#shopList { flex:1; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:7px; }
+#shopkeeper {
+  flex-shrink:0;
+  background:linear-gradient(180deg,rgba(10,42,74,0.95) 0%,rgba(7,30,51,0.98) 100%);
+  border-bottom:2px solid rgba(255,215,0,0.15);
+  padding:12px 14px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  position:relative;
+  overflow:hidden;
+}
+#shopkeeper::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 0%, rgba(255,215,0,0.07) 0%, transparent 70%);
+  pointer-events:none;
+}
+#shopkeeperImg {
+  width:72px; height:72px; border-radius:50%;
+  border:3px solid rgba(255,215,0,0.5);
+  box-shadow:0 0 18px rgba(255,215,0,0.25), 0 4px 12px rgba(0,0,0,0.5);
+  object-fit:cover; background:#1a3a5a;
+  flex-shrink:0;
+}
+#shopkeeperName {
+  font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold);
+  letter-spacing:0.5px;
+}
+#shopkeeperSpeech {
+  font-size:0.7rem; color:rgba(232,244,253,0.65); font-weight:600;
+  text-align:center; line-height:1.4;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px; padding:5px 10px;
+  position:relative; min-height:28px;
+}
+#shopkeeperSpeech::before {
+  content:''; position:absolute; top:-7px; left:50%; transform:translateX(-50%);
+  border:6px solid transparent; border-bottom-color:rgba(255,255,255,0.08);
+}
+
+.tab-row { display:flex; gap:0; background:rgba(0,0,0,0.2); border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
+.tab { flex:1; font-family:'Boogaloo',cursive; font-size:0.82rem; padding:7px 0; text-align:center; color:rgba(232,244,253,0.35); border-bottom:2px solid transparent; cursor:none; transition:color 0.2s, border-color 0.2s, background 0.2s; }
+.tab.active { color:var(--foam); border-color:var(--gold); background:rgba(255,215,0,0.05); }
+.tab:hover { color:rgba(232,244,253,0.8); }
+.tab.rare-tab.active { color:var(--rare); border-color:var(--rare); background:rgba(168,85,247,0.05); }
+
+#shopList { flex:1; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:6px; }
 #shopList::-webkit-scrollbar{width:3px;}
 #shopList::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
 
-.shop-item { background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.08); border-radius:11px; padding:9px 11px; display:flex; flex-direction:column; gap:3px; transition:background 0.15s, border-color 0.15s; cursor:none; }
-.shop-item:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,215,0,0.3);}
+.shop-item { background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.08); border-radius:11px; padding:9px 11px; display:flex; flex-direction:column; gap:3px; transition:background 0.15s, border-color 0.15s, transform 0.1s; cursor:none; }
+.shop-item:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,215,0,0.3); transform:translateX(-2px);}
 .shop-item.can-afford{border-color:rgba(78,203,113,0.4);}
 .shop-item.can-afford:hover{background:rgba(78,203,113,0.08);border-color:rgba(78,203,113,0.65);}
 .shop-item.buying{animation:buyPop 0.22s cubic-bezier(0.34,1.56,0.64,1);}
@@ -240,7 +277,21 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
         <input type="range" id="soundVol" min="0" max="100" value="60" oninput="setSoundVol(this.value)" />
         <span id="soundVolVal">60</span>
       </div>
-      <div style="font-size:0.68rem;color:rgba(232,244,253,0.2);margin-top:2px;">🎵 Sound file coming soon</div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">🎵 Background Music</div>
+      <div class="settings-row">
+        <span class="settings-hint">Enable music</span>
+        <label class="toggle">
+          <input type="checkbox" id="musicToggle" onchange="toggleMusic(this.checked)" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settings-row">
+        <span class="settings-hint">Volume</span>
+        <input type="range" id="musicVol" min="0" max="100" value="40" oninput="setMusicVol(this.value)" />
+        <span id="musicVolVal">40</span>
+      </div>
     </div>
   </div>
 </div>
@@ -279,13 +330,16 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 
   
   <div id="shop">
-    <div id="shopHeader">
-      🏪 Shop
-      <div class="tab-row">
-        <div class="tab active" id="tabUpgrades" onclick="switchTab('upgrades')">⚙️ Upgrades</div>
-        <div class="tab rare-tab" id="tabSeals" onclick="switchTab('seals')">✨ Seals</div>
-        <div class="tab" id="tabGame" onclick="switchTab('game')">🎮 Game</div>
-      </div>
+    <div id="shopkeeper">
+      <img id="shopkeeperImg" src="https://i.pinimg.com/736x/eb/95/a8/eb95a876b71a18ccd0341b758d757a3f.jpg" alt="shopkeeper seal" />
+      <div id="shopkeeperName">🦭 Wally's Shop</div>
+      <div id="shopkeeperSpeech">Welcome! What can I get ya? 🐟</div>
+    </div>
+    <div class="tab-row">
+      <div class="tab active" id="tabUpgrades" onclick="switchTab('upgrades')">⚙️ Upgrades</div>
+      <div class="tab rare-tab" id="tabSeals" onclick="switchTab('seals')">✨ Seals</div>
+      <div class="tab" id="tabGame" onclick="switchTab('game')">🎮 Game</div>
+      <div class="tab" id="tabEvents" onclick="switchTab('events')">🎪 Events</div>
     </div>
     <div id="shopList"></div>
     <div id="statsBar">
@@ -477,11 +531,13 @@ const captions = [
   "Fish secured 🪣","10/10 seal 😭","Ocean vibes 🌊","He said yes! 💚"
 ];
 
+let _uiThrottle = null;
 function earnFish(isAuto=false, bonus=0) {
   const earned = fishPerClick + bonus;
   fish += earned; totalFish += earned; totalClicks++;
-  updateUI();
-  if (isAuto) showAutoPulse();
+  if (eventState==='active') { eventClicks++; if(eventClicks>=EVENT_GOAL){ clearInterval(eventTimer); eventTimer=null; eventState='complete'; fish+=EVENT_REWARD; totalFish+=EVENT_REWARD; spawnSplash('🏆 EVENT COMPLETE! +500K 🐟',true); wallySay('INCREDIBLE!! 🏆🐟🐟🐟'); stopMusic(); updateUI(); return; } }
+  if (isAuto) { showAutoPulse(); if(!_uiThrottle) _uiThrottle=setTimeout(()=>{ updateUI(); _uiThrottle=null; },100); }
+  else updateUI();
 }
 
 const sealFrame=document.getElementById('sealFrame');
@@ -497,6 +553,7 @@ sealFrame.addEventListener('click', e => {
     fish += fishPerClick + ss.fishBonus;
     totalFish += fishPerClick + ss.fishBonus;
     totalClicks++;
+    if (eventState==='active') eventClicks++;
     if (ss.id==='niko') nikoVisits++;
     showRarePopup(ss);
     sealImg.src = ss.url;
@@ -572,12 +629,36 @@ function showAutoPulse() {
   setTimeout(()=>d.remove(),400);
 }
 
+const wallyLines = {
+  upgrades: ["What'll it be? 🐟","Upgrades make ya stronger! 💪","Good choice, invest wisely 🧠","My finest gear, just for you 🛒"],
+  seals:    ["Special seals, very rare! ✨","These guys are one of a kind 🦭","Pick your buddy carefully 🥺","Not many of these left! 🌟"],
+  game:     ["Feeling lucky? 🎮","Mini games, big rewards! 🎯","Go on, give it a shot 🎲","I love watching people play 👀"],
+  events:   ["Big challenge today! 🎪","Think you can handle it? 💪","1 million clicks... easy? 😏","The rewards are worth it! 🏆"],
+  buy:      ["Pleasure doing business! 🤝","Excellent choice! 🐟","You won't regret it! ✨","A fine purchase! 💰","Arf arf! 🦭","Come back soon! 🌊"],
+  broke:    ["Hmm... need more fish 🐟","Save up a bit more! 💸","Not enough fish for that 😬","Keep clicking! 🦭"],
+};
+let wallyTimer = null;
+function wallySay(msg) {
+  const el = document.getElementById('shopkeeperSpeech');
+  if (!el) return;
+  if (wallyTimer) clearTimeout(wallyTimer);
+  el.textContent = msg;
+}
+function wallyRandom(category) {
+  const arr = wallyLines[category];
+  wallySay(arr[Math.floor(Math.random()*arr.length)]);
+}
+
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tabUpgrades').classList.toggle('active', tab==='upgrades');
   document.getElementById('tabSeals').classList.toggle('active', tab==='seals');
   document.getElementById('tabGame').classList.toggle('active', tab==='game');
+  document.getElementById('tabEvents').classList.toggle('active', tab==='events');
   if (tab !== 'game') stopMinigame();
+  if (tab === 'events') startMusic();
+  else stopMusic();
+  wallyRandom(tab in wallyLines ? tab : 'upgrades');
   renderShop();
 }
 
@@ -605,12 +686,15 @@ function renderShop() {
         if(item.isAuto) startAuto(item);
         div.classList.add('buying'); setTimeout(()=>div.classList.remove('buying'),250);
         spawnSplash(item.icon+' bought!');
+        wallyRandom('buy');
         updateUI();
       });
       list.appendChild(div);
     }
   } else if (currentTab === 'game') {
     renderMinigame();
+  } else if (currentTab === 'events') {
+    renderEvents();
   } else {
     for (const ss of specialSeals) {
       const cost=Math.floor(ss.cost*Math.pow(ss.costMult,ss.owned));
@@ -637,12 +721,125 @@ function renderShop() {
           fish-=c; ss.owned++;
           div.classList.add('buying'); setTimeout(()=>div.classList.remove('buying'),250);
           spawnSplash('✨ '+ss.name+' unlocked!', true);
+          wallyRandom('buy');
           updateUI();
         });
       }
       list.appendChild(div);
     }
   }
+}
+
+const EVENT_COST = 100000;
+const EVENT_GOAL = 50000;
+const EVENT_REWARD = 500000;
+const EVENT_DURATION = 10 * 60;
+let eventState = 'idle'; // idle | active | complete | failed
+let eventClicks = 0;
+let eventTimeLeft = EVENT_DURATION;
+let eventTimer = null;
+let eventClicksAtStart = 0;
+
+function startEvent() {
+  if (fish < EVENT_COST) { wallyRandom('broke'); return; }
+  fish -= EVENT_COST;
+  eventState = 'active';
+  eventClicks = 0;
+  eventTimeLeft = EVENT_DURATION;
+  eventClicksAtStart = totalClicks;
+  if (eventTimer) clearInterval(eventTimer);
+  eventTimer = setInterval(() => {
+    eventTimeLeft--;
+    if (eventTimeLeft <= 0) {
+      clearInterval(eventTimer); eventTimer = null;
+      if (eventClicks >= EVENT_GOAL) {
+        eventState = 'complete';
+        fish += EVENT_REWARD; totalFish += EVENT_REWARD;
+        spawnSplash('🏆 EVENT COMPLETE! +1.5M 🐟', true);
+        wallySay('INCREDIBLE!! 🏆🐟🐟🐟');
+      } else {
+        eventState = 'failed';
+        wallySay('So close... try again! 😢');
+      }
+      stopMusic();
+      updateUI();
+    }
+    if (currentTab === 'events') renderShop();
+  }, 1000);
+  if (currentTab === 'events') startMusic();
+  updateUI(); renderShop();
+}
+
+function renderEvents() {
+  const list = document.getElementById('shopList');
+  list.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:4px 2px;';
+
+  const mins = Math.floor(eventTimeLeft/60);
+  const secs = String(eventTimeLeft%60).padStart(2,'0');
+  const pct = eventState==='active' ? Math.min(100,(eventClicks/EVENT_GOAL)*100).toFixed(1) : 0;
+
+  if (eventState === 'idle') {
+    wrap.innerHTML = `
+      <div style="text-align:center;padding:10px 0 4px;">
+        <div style="font-size:2.2rem;">🎪</div>
+        <div style="font-family:'Boogaloo',cursive;font-size:1.1rem;color:var(--gold);margin:4px 0;">CLICK FRENZY</div>
+        <div style="font-size:0.7rem;color:rgba(232,244,253,0.45);font-weight:600;line-height:1.6;">
+          Hit <b style="color:#e8f4fd;">50,000 clicks</b> in<br>
+          <b style="color:#e8f4fd;">10 minutes</b> to win<br>
+          <b style="color:#ffd700;">500,000 🐟</b>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,215,0,0.2);border-radius:11px;padding:10px 12px;font-size:0.7rem;color:rgba(232,244,253,0.4);font-weight:600;line-height:1.8;">
+        <div>💰 Entry cost: <span style="color:#ffd700;">100,000 🐟</span></div>
+        <div>🎯 Goal: <span style="color:#e8f4fd;">50,000 clicks</span></div>
+        <div>⏱️ Time limit: <span style="color:#e8f4fd;">10 minutes</span></div>
+        <div>🏆 Reward: <span style="color:#4ecb71;">500,000 🐟</span></div>
+      </div>
+      <button id="startEventBtn" style="font-family:'Boogaloo',cursive;font-size:1rem;padding:10px;border-radius:12px;border:2px solid rgba(255,215,0,0.5);background:rgba(255,215,0,0.12);color:var(--gold);cursor:none;transition:background 0.2s;width:100%;">
+        ${fish>=EVENT_COST ? '🎪 Start Event (100K 🐟)' : '❌ Need 100,000 🐟'}
+      </button>`;
+    const btn = wrap.querySelector('#startEventBtn');
+    if (fish >= EVENT_COST) btn.addEventListener('click', startEvent);
+
+  } else if (eventState === 'active') {
+    wrap.innerHTML = `
+      <div style="text-align:center;padding:6px 0 2px;">
+        <div style="font-family:'Boogaloo',cursive;font-size:1.3rem;color:${eventTimeLeft<=30?'#ff6b6b':'var(--gold)'};">⏱️ ${mins}:${secs}</div>
+        <div style="font-size:0.68rem;color:rgba(232,244,253,0.4);font-weight:600;margin-top:2px;">TIME REMAINING</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(56,182,255,0.3);border-radius:11px;padding:10px 12px;">
+        <div style="font-family:'Boogaloo',cursive;font-size:1rem;color:#60c4ff;text-align:center;">${eventClicks.toLocaleString()} / 1,000,000</div>
+        <div style="background:rgba(255,255,255,0.07);border-radius:20px;height:10px;margin:8px 0 4px;overflow:hidden;">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#38b6ff,#c084fc);border-radius:20px;transition:width 0.3s;"></div>
+        </div>
+        <div style="font-size:0.65rem;color:rgba(232,244,253,0.35);font-weight:600;text-align:center;">${pct}% complete</div>
+      </div>
+      <div style="font-size:0.68rem;color:rgba(232,244,253,0.3);text-align:center;font-weight:600;">KEEP CLICKING THE SEAL! 🦭</div>`;
+
+  } else if (eventState === 'complete') {
+    wrap.innerHTML = `
+      <div style="text-align:center;padding:10px 0;">
+        <div style="font-size:2.5rem;">🏆</div>
+        <div style="font-family:'Boogaloo',cursive;font-size:1.2rem;color:#4ecb71;margin:6px 0;">CHALLENGE COMPLETE!</div>
+        <div style="font-size:0.72rem;color:rgba(232,244,253,0.5);font-weight:600;">You earned <b style="color:#ffd700;">500,000 🐟</b></div>
+      </div>
+      <button id="resetEventBtn" style="font-family:'Boogaloo',cursive;font-size:0.9rem;padding:8px;border-radius:12px;border:2px solid rgba(78,203,113,0.4);background:rgba(78,203,113,0.12);color:#4ecb71;cursor:none;width:100%;">🔄 Play Again</button>`;
+    wrap.querySelector('#resetEventBtn').addEventListener('click', ()=>{ eventState='idle'; renderShop(); });
+
+  } else if (eventState === 'failed') {
+    wrap.innerHTML = `
+      <div style="text-align:center;padding:10px 0;">
+        <div style="font-size:2.5rem;">😢</div>
+        <div style="font-family:'Boogaloo',cursive;font-size:1.2rem;color:#ff6b6b;margin:6px 0;">TIME'S UP!</div>
+        <div style="font-size:0.72rem;color:rgba(232,244,253,0.5);font-weight:600;">You got <b style="color:#60c4ff;">${eventClicks.toLocaleString()}</b> clicks<br>Need 50,000 to win</div>
+      </div>
+      <button id="resetEventBtn" style="font-family:'Boogaloo',cursive;font-size:0.9rem;padding:8px;border-radius:12px;border:2px solid rgba(255,107,107,0.4);background:rgba(255,107,107,0.1);color:#ff6b6b;cursor:none;width:100%;">🔄 Try Again</button>`;
+    wrap.querySelector('#resetEventBtn').addEventListener('click', ()=>{ eventState='idle'; renderShop(); });
+  }
+
+  list.appendChild(wrap);
 }
 
 function spawnSplash(text, isRare=false) {
@@ -657,9 +854,92 @@ function spawnSplash(text, isRare=false) {
 
 function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
 let soundEnabled = true, soundVolume = 60;
-function toggleSound(val) { soundEnabled = val; }
-function setSoundVol(v) { soundVolume = parseInt(v); document.getElementById('soundVolVal').textContent = v; }
-function playClickSound() { if (!soundEnabled) return; }
+function toggleSound(val) { soundEnabled = val; gainNode.gain.value = val ? soundVolume/100 : 0; }
+function setSoundVol(v) { soundVolume = parseInt(v); document.getElementById('soundVolVal').textContent = v; if(soundEnabled && gainNode) gainNode.gain.value = soundVolume/100; }
+
+const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+let gainNode = audioCtx.createGain();
+gainNode.gain.value = soundVolume/100;
+gainNode.connect(audioCtx.destination);
+
+function playClickSound() {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.connect(g); g.connect(gainNode);
+  o.type = 'sine';
+  o.frequency.setValueAtTime(520, audioCtx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(320, audioCtx.currentTime + 0.08);
+  g.gain.setValueAtTime(0.35, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+  o.start(audioCtx.currentTime);
+  o.stop(audioCtx.currentTime + 0.12);
+}
+
+let bgMusic = null, bgGain = null, musicEnabled = true, musicVolume = 40;
+function toggleMusic(val) {
+  musicEnabled = val;
+  if (bgGain) bgGain.gain.value = val ? musicVolume/100 : 0;
+}
+function setMusicVol(v) {
+  musicVolume = parseInt(v);
+  document.getElementById('musicVolVal').textContent = v;
+  if (bgGain) bgGain.gain.value = musicEnabled ? musicVolume/100 : 0;
+}
+function stopMusic() {
+  if (bgMusic) { clearTimeout(bgMusic); bgMusic = null; }
+  if (bgGain) { bgGain.gain.value = 0; bgGain = null; }
+}
+function startMusic() {
+  if (bgMusic) return;
+  bgGain = audioCtx.createGain();
+  bgGain.gain.value = musicEnabled ? musicVolume/100 : 0;
+  bgGain.connect(audioCtx.destination);
+
+  function playNote(freq, time, dur, vol=0.08) {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(bgGain);
+    o.type = 'triangle';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, time);
+    g.gain.linearRampToValueAtTime(vol, time + 0.05);
+    g.gain.setValueAtTime(vol, time + dur - 0.05);
+    g.gain.linearRampToValueAtTime(0, time + dur);
+    o.start(time); o.stop(time + dur);
+  }
+
+  const melody = [261.6,293.7,329.6,349.2,392,349.2,329.6,293.7,261.6,220,246.9,261.6];
+  const bass   = [130.8,130.8,164.8,174.6,196,174.6,164.8,130.8];
+  const beat = 0.45;
+
+  function scheduleMelody(startTime) {
+    melody.forEach((f,i) => playNote(f, startTime + i*beat, beat*0.85, 0.06));
+    return startTime + melody.length * beat;
+  }
+  function scheduleBass(startTime) {
+    bass.forEach((f,i) => playNote(f, startTime + i*beat*1.5, beat*1.2, 0.04));
+  }
+
+  function doLoop() {
+    let t = audioCtx.currentTime + 0.1;
+    function loop() {
+      const end = scheduleMelody(t);
+      scheduleBass(t);
+      t = end;
+      bgMusic = setTimeout(loop, (end - audioCtx.currentTime - 0.3) * 1000);
+    }
+    loop();
+  }
+
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().then(doLoop);
+  } else {
+    doLoop();
+  }
+}
+
+document.addEventListener('click', () => { if(audioCtx.state==='suspended') audioCtx.resume(); }, {once:true});
 
 let mgRunning = false, mgTimeLeft = 0, mgCaught = 0;
 let mgInterval = null, mgFishInterval = null, mgSealInterval = null;
