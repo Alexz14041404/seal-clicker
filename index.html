@@ -136,14 +136,16 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 
 .tab-row-wrap { position:relative; flex-shrink:0; }
 .tab-row-wrap::before, .tab-row-wrap::after { content:''; position:absolute; top:0; bottom:0; width:24px; pointer-events:none; z-index:2; }
-.tab-row-wrap::before { left:0; background:linear-gradient(to right, var(--shop-bg), transparent); }
-.tab-row-wrap::after { right:0; background:linear-gradient(to left, var(--shop-bg), transparent); }
+.tab-row-wrap::before { display:none; }
+.tab-row-wrap::after { display:none; }
 
+.tab-row { display:flex; flex-direction:column; width:100%; }
 .tab-row::-webkit-scrollbar { display:none; }
-.tab { flex:0 0 auto; font-family:'Boogaloo',cursive; font-size:0.82rem; padding:7px 10px; text-align:center; color:rgba(232,244,253,0.35); border-bottom:2px solid transparent; cursor:none; transition:color 0.2s, border-color 0.2s, background 0.2s; white-space:nowrap; }
-.tab.active { color:var(--foam); border-color:var(--gold); background:rgba(255,215,0,0.05); }
+.tab { font-family:'Boogaloo',cursive; font-size:0.85rem; padding:9px 16px; text-align:center; color:rgba(232,244,253,0.35); border-bottom:1px solid rgba(255,255,255,0.05); border-left:3px solid transparent; cursor:none; transition:color 0.2s, border-color 0.2s, background 0.2s; }
+.tab.active { color:var(--foam); border-left-color:var(--gold); background:rgba(255,215,0,0.05); border-bottom-color:rgba(255,255,255,0.05); }
+.tab.rare-tab.active { color:var(--rare); border-left-color:var(--rare); background:rgba(168,85,247,0.05); }
+.tab.rebirth-tab.active { color:var(--rebirth); border-left-color:var(--rebirth); background:rgba(249,115,22,0.05); }
 .tab:hover { color:rgba(232,244,253,0.8); }
-.tab.rare-tab.active { color:var(--rare); border-color:var(--rare); background:rgba(168,85,247,0.05); }
 
 #shopList { flex:1; overflow-y:scroll; padding:8px; display:flex; flex-direction:column; gap:6px; min-height:0; }
 #shopList::-webkit-scrollbar{width:3px;}
@@ -197,6 +199,20 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 
 #bizarreBtn { font-size:1.1rem; background:rgba(168,85,247,0.12); border:1.5px solid rgba(168,85,247,0.35); color:#c084fc; border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; }
 #bizarreBtn:hover { background:rgba(168,85,247,0.25); }
+#fishKingBanner {
+  position:fixed; top:62px; left:16px; z-index:600;
+  background:linear-gradient(135deg,rgba(255,215,0,0.97),rgba(255,180,0,0.97));
+  border-radius:16px; padding:10px 16px;
+  font-family:'Boogaloo',cursive; font-size:1rem; color:#071e33;
+  box-shadow:0 0 24px rgba(255,215,0,0.5), 0 4px 16px rgba(0,0,0,0.4);
+  opacity:0; pointer-events:none; transition:opacity 0.4s;
+  display:flex; flex-direction:column; gap:2px; min-width:180px;
+}
+#fishKingBanner.show { opacity:1; }
+#fishKingBanner .fk-title { font-size:1.05rem; font-weight:700; }
+#fishKingBanner .fk-time { font-size:0.82rem; opacity:0.75; }
+#fishKingBanner .fk-bar-wrap { height:5px; background:rgba(0,0,0,0.15); border-radius:5px; overflow:hidden; margin-top:2px; }
+#fishKingBanner .fk-bar { height:100%; background:rgba(0,0,0,0.35); border-radius:5px; transition:width 1s linear; }
 #luckOverdriveBanner { position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:600; background:linear-gradient(135deg,rgba(255,215,0,0.95),rgba(255,165,0,0.95)); border-radius:30px; padding:8px 24px; font-family:'Boogaloo',cursive; font-size:1.1rem; color:#071e33; box-shadow:0 0 30px rgba(255,215,0,0.6); opacity:0; transition:opacity 0.4s; pointer-events:none; white-space:nowrap; }
 #achievBtn { font-size:1.1rem; background:transparent; border:none; color:var(--foam); border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; position:relative; }
 #achievBtn:hover { background:rgba(255,255,255,0.1); }
@@ -392,6 +408,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 </div>
 
 <div id="luckOverdriveBanner">⚡ LUCK OVERDRIVE! Seal chances +5%! 🍀</div>
+<div id="fishKingBanner"><div class="fk-title">👑 FISH KING ACTIVE!</div><div class="fk-sub" style="font-size:0.75rem;opacity:0.7;">2× fish · 10% cheaper upgrades</div><div class="fk-time" id="fishKingTime">2:00:00 remaining</div><div class="fk-bar-wrap"><div class="fk-bar" id="fishKingBar" style="width:100%"></div></div></div>
 
 <div id="storyCutscene">
   <div id="storyBox">
@@ -866,6 +883,10 @@ let rebirthSealBonus  = 1;
 let rebirthCompoundClick = false;
 let rebirthDoubleDip  = false;
 let rebirthClickCount = 0;
+let buffFishKing = false;
+let fishKingTimeLeft = 0;
+let fishKingTimer = null;
+const FISH_KING_DURATION = 2 * 60 * 60; // 2 hours in seconds
 
 function applyAllRebirthUpgrades() {
   rebirthMultiplier = 1; rebirthAutoMult = 1;
@@ -1089,6 +1110,7 @@ const SAVE_KEY = 'sealclicker_save_v2';
 function saveGame() {
   const data = {
     fish, totalFish, totalClicks, sealsShown, nikoVisits, hootieVisits, luckyVisits, sorryVisits, bizarreVisits, mgTotalCaught,
+    fishKingTimeLeft,
     bizarreCoins,
     bizarreItems: bizarreItems.map(i=>({id:i.id,owned:i.owned})),
     rebirthCoins, rebirthCount,
@@ -1166,9 +1188,10 @@ function earnFish(isAuto=false, bonus=0) {
   let clickMult = 1;
   if (rebirthDoubleDip && rebirthClickCount % 10 === 0) clickMult = 2;
   const compoundBonus = rebirthCompoundClick ? Math.floor(totalFish * 0.01) : 0;
-  const earned = Math.floor((fishPerClick + bonus + compoundBonus) * rebirthMultiplier * clickMult);
+  const earned = Math.floor((fishPerClick + bonus + compoundBonus) * rebirthMultiplier * clickMult * (buffFishKing ? 2 : 1));
   fish += earned; totalFish += earned; totalClicks++;
-  if (eventState==='active') { eventClicks++; if(eventClicks>=EVENT_GOAL){ clearInterval(eventTimer); eventTimer=null; eventState='complete'; fish+=EVENT_REWARD; totalFish+=EVENT_REWARD; spawnSplash('🏆 EVENT COMPLETE! +500K 🐟',true); wallySay('INCREDIBLE!! 🏆🐟🐟🐟'); stopMusic(); updateUI(); return; } }
+  earnEvent2Bonus();
+  if (eventState==='active') { eventClicks++; if(eventClicks>=EVENT_GOAL){ clearInterval(eventTimer); eventTimer=null; eventState='complete'; fish+=EVENT_REWARD; totalFish+=EVENT_REWARD; spawnSplash('🏆 EVENT COMPLETE! +1.5M 🐟',true); wallySay('INCREDIBLE!! 🏆🐟🐟🐟'); stopMusic(); updateUI(); return; } }
   if (isAuto) { showAutoPulse(); if(!_uiThrottle) _uiThrottle=setTimeout(()=>{ updateUI(); _uiThrottle=null; },100); }
   else updateUI();
 }
@@ -1186,6 +1209,7 @@ sealFrame.addEventListener('click', e => {
     fish += fishPerClick + Math.floor(ss.fishBonus * rebirthSealBonus);
     totalFish += fishPerClick + Math.floor(ss.fishBonus * rebirthSealBonus);
     totalClicks++;
+    earnEvent2Bonus();
     if (eventState==='active') eventClicks++;
     if (ss.id==='niko') nikoVisits++;
     if (ss.id==='hootie') hootieVisits++;
@@ -1357,7 +1381,7 @@ function switchTab(tab) {
   document.getElementById('tabRebirth') && document.getElementById('tabRebirth').classList.toggle('active', tab==='rebirth');
   document.getElementById('tabAchiev') && document.getElementById('tabAchiev').classList.toggle('active', false);
   if (tab !== 'game') stopMinigame();
-  if (tab === 'events') startMusic();
+  if (tab === 'events' && (eventState==='active' || event2State==='active')) startMusic();
   else stopMusic();
   wallyRandom(tab in wallyLines ? tab : 'upgrades');
   renderShop();
@@ -1369,7 +1393,7 @@ function renderShop() {
   if (currentTab==='upgrades') {
     for (const item of upgradeItems) {
       const locked = item.reqRebirth && rebirthCount < item.reqRebirth;
-      const cost=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned)*rebirthCostMult);
+      const cost=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned)*rebirthCostMult*(buffFishKing?0.9:1));
       const can=!locked && fish>=cost;
       const div=document.createElement('div');
       div.className='shop-item'+(locked?' rebirth-locked':can?' can-afford':'');
@@ -1508,13 +1532,22 @@ function renderStats() {
 
 const EVENT_COST = 100000;
 const EVENT_GOAL = 50000;
-const EVENT_REWARD = 500000;
+const EVENT_REWARD = 1500000;
 const EVENT_DURATION = 10 * 60;
 let eventState = 'idle'; // idle | active | complete | failed
 let eventClicks = 0;
 let eventTimeLeft = EVENT_DURATION;
 let eventTimer = null;
 let eventClicksAtStart = 0;
+
+// ── Event 2: Fish Rush ────────────────────────────────────────────────────────
+const EVENT2_COST     = 500000;
+const EVENT2_DURATION = 60;      // 60 seconds — survive and click as much as possible
+const EVENT2_BASE_REWARD = 100;  // fish per click during rush (bonus on top of normal)
+let event2State    = 'idle';     // idle | active | complete
+let event2TimeLeft = EVENT2_DURATION;
+let event2Timer    = null;
+let event2Earned   = 0;
 
 function startEvent() {
   const actualEventCost = rebirthEventCostMult === 0 ? 0 : Math.floor(EVENT_COST * rebirthEventCostMult);
@@ -1543,7 +1576,6 @@ function startEvent() {
     }
     if (currentTab === 'events') renderShop();
   }, 1000);
-  if (currentTab === 'events') startMusic();
   updateUI(); renderShop();
 }
 
@@ -1565,14 +1597,14 @@ function renderEvents() {
         <div style="font-size:0.7rem;color:rgba(232,244,253,0.45);font-weight:600;line-height:1.6;">
           Hit <b style="color:#e8f4fd;">50,000 clicks</b> in<br>
           <b style="color:#e8f4fd;">10 minutes</b> to win<br>
-          <b style="color:#ffd700;">500,000 🐟</b>
+          <b style="color:#ffd700;">1,500,000 🐟</b>
         </div>
       </div>
       <div style="background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,215,0,0.2);border-radius:11px;padding:10px 12px;font-size:0.7rem;color:rgba(232,244,253,0.4);font-weight:600;line-height:1.8;">
         <div>💰 Entry cost: <span style="color:#ffd700;">100,000 🐟</span></div>
         <div>🎯 Goal: <span style="color:#e8f4fd;">50,000 clicks</span></div>
         <div>⏱️ Time limit: <span style="color:#e8f4fd;">10 minutes</span></div>
-        <div>🏆 Reward: <span style="color:#4ecb71;">500,000 🐟</span></div>
+        <div>🏆 Reward: <span style="color:#4ecb71;">1,500,000 🐟</span></div>
       </div>
       <button id="startEventBtn" style="font-family:'Boogaloo',cursive;font-size:1rem;padding:10px;border-radius:12px;border:2px solid rgba(255,215,0,0.5);background:rgba(255,215,0,0.12);color:var(--gold);cursor:none;transition:background 0.2s;width:100%;">
         ${fish>=EVENT_COST ? '🎪 Start Event (100K 🐟)' : '❌ Need 100,000 🐟'}
@@ -1600,7 +1632,7 @@ function renderEvents() {
       <div style="text-align:center;padding:10px 0;">
         <div style="font-size:2.5rem;">🏆</div>
         <div style="font-family:'Boogaloo',cursive;font-size:1.2rem;color:#4ecb71;margin:6px 0;">CHALLENGE COMPLETE!</div>
-        <div style="font-size:0.72rem;color:rgba(232,244,253,0.5);font-weight:600;">You earned <b style="color:#ffd700;">500,000 🐟</b></div>
+        <div style="font-size:0.72rem;color:rgba(232,244,253,0.5);font-weight:600;">You earned <b style="color:#ffd700;">1,500,000 🐟</b></div>
       </div>
       <button id="resetEventBtn" style="font-family:'Boogaloo',cursive;font-size:0.9rem;padding:8px;border-radius:12px;border:2px solid rgba(78,203,113,0.4);background:rgba(78,203,113,0.12);color:#4ecb71;cursor:none;width:100%;">🔄 Play Again</button>`;
     wrap.querySelector('#resetEventBtn').addEventListener('click', ()=>{ eventState='idle'; renderShop(); });
@@ -1616,7 +1648,96 @@ function renderEvents() {
     wrap.querySelector('#resetEventBtn').addEventListener('click', ()=>{ eventState='idle'; renderShop(); });
   }
 
+  // ── Event 2 ──
+  const divider = document.createElement('div');
+  divider.style.cssText = 'border-top:1px solid rgba(255,255,255,0.07);margin:4px 0;';
+  wrap.appendChild(divider);
+  renderEvent2(wrap);
   list.appendChild(wrap);
+}
+
+function startEvent2() {
+  const cost = Math.floor(EVENT2_COST * (rebirthEventCostMult === 0 ? 0 : rebirthEventCostMult));
+  if (fish < cost) { wallyRandom('broke'); return; }
+  fish -= cost;
+  event2State = 'active';
+  event2TimeLeft = EVENT2_DURATION;
+  event2Earned = 0;
+  if (event2Timer) clearInterval(event2Timer);
+  event2Timer = setInterval(() => {
+    event2TimeLeft--;
+    if (event2TimeLeft <= 0) {
+      clearInterval(event2Timer); event2Timer = null;
+      event2State = 'complete';
+      spawnSplash('🌊 RUSH OVER! +' + fmt(event2Earned) + ' 🐟', true);
+      wallySay('What a rush!! 🌊🐟');
+      stopMusic();
+      updateUI();
+    }
+    if (currentTab === 'events') renderShop();
+  }, 1000);
+  updateUI(); renderShop();
+}
+
+// Called from earnFish when event2 is active — bonus fish per click
+function earnEvent2Bonus() {
+  if (event2State !== 'active') return;
+  const bonus = Math.floor(EVENT2_BASE_REWARD * rebirthMultiplier * (buffFishKing ? 2 : 1));
+  fish += bonus; totalFish += bonus; event2Earned += bonus;
+}
+
+function renderEvent2(wrap) {
+  const cost = Math.floor(EVENT2_COST * (rebirthEventCostMult === 0 ? 0 : rebirthEventCostMult));
+  const canAfford = fish >= cost;
+  if (event2State === 'idle') {
+    wrap.innerHTML += `
+      <div style="margin-top:8px;background:rgba(56,182,255,0.06);border:1.5px solid rgba(56,182,255,0.3);border-radius:13px;padding:12px 14px;">
+        <div style="text-align:center;margin-bottom:8px;">
+          <div style="font-size:1.8rem;">🌊</div>
+          <div style="font-family:'Boogaloo',cursive;font-size:1rem;color:#60c4ff;margin:3px 0;">FISH RUSH</div>
+          <div style="font-size:0.68rem;color:rgba(232,244,253,0.4);font-weight:600;line-height:1.6;">Click as fast as you can for 60 seconds!<br>Every click earns <b style="color:#e8f4fd;">+100 bonus fish</b> on top of normal.</div>
+        </div>
+        <div style="font-size:0.68rem;color:rgba(232,244,253,0.35);font-weight:600;line-height:1.8;margin-bottom:8px;">
+          <div>💰 Entry: <span style="color:#60c4ff;">${fmt(cost)} 🐟</span></div>
+          <div>⏱️ Duration: <span style="color:#e8f4fd;">60 seconds</span></div>
+          <div>🏆 Reward: <span style="color:#4ecb71;">+100 🐟 per click!</span></div>
+        </div>
+        <button id="startEvent2Btn" style="font-family:'Boogaloo',cursive;font-size:0.9rem;padding:8px;border-radius:10px;border:2px solid rgba(56,182,255,0.5);background:rgba(56,182,255,0.12);color:#60c4ff;cursor:none;transition:background 0.2s;width:100%;">
+          ${canAfford ? '🌊 Start Fish Rush (' + fmt(cost) + ' 🐟)' : '❌ Need ' + fmt(cost) + ' 🐟'}
+        </button>
+      </div>`;
+    if (canAfford) {
+      setTimeout(() => {
+        const b = document.getElementById('startEvent2Btn');
+        if (b) b.addEventListener('click', startEvent2);
+      }, 0);
+    }
+  } else if (event2State === 'active') {
+    wrap.innerHTML += `
+      <div style="margin-top:8px;background:rgba(56,182,255,0.08);border:2px solid rgba(56,182,255,0.5);border-radius:13px;padding:12px 14px;">
+        <div style="text-align:center;">
+          <div style="font-family:'Boogaloo',cursive;font-size:1.6rem;color:#60c4ff;">🌊 ${event2TimeLeft}s</div>
+          <div style="font-size:0.68rem;color:rgba(232,244,253,0.4);font-weight:600;margin:4px 0;">FISH RUSH IN PROGRESS</div>
+          <div style="font-family:'Boogaloo',cursive;font-size:1rem;color:#4ecb71;">+${fmt(event2Earned)} 🐟 earned</div>
+          <div style="background:rgba(255,255,255,0.07);border-radius:20px;height:8px;margin:8px 0 4px;overflow:hidden;">
+            <div style="height:100%;width:${(event2TimeLeft/EVENT2_DURATION*100).toFixed(1)}%;background:linear-gradient(90deg,#38b6ff,#4ecb71);border-radius:20px;transition:width 1s linear;"></div>
+          </div>
+          <div style="font-size:0.65rem;color:rgba(56,182,255,0.6);font-weight:700;">CLICK CLICK CLICK!! 🦭</div>
+        </div>
+      </div>`;
+  } else if (event2State === 'complete') {
+    wrap.innerHTML += `
+      <div style="margin-top:8px;background:rgba(56,182,255,0.06);border:1.5px solid rgba(56,182,255,0.3);border-radius:13px;padding:12px 14px;text-align:center;">
+        <div style="font-size:2rem;">🌊</div>
+        <div style="font-family:'Boogaloo',cursive;font-size:1rem;color:#60c4ff;margin:4px 0;">RUSH COMPLETE!</div>
+        <div style="font-size:0.72rem;color:rgba(232,244,253,0.5);font-weight:600;">You earned <b style="color:#4ecb71;">${fmt(event2Earned)} 🐟</b> extra!</div>
+        <button id="resetEvent2Btn" style="font-family:'Boogaloo',cursive;font-size:0.85rem;padding:7px;border-radius:10px;border:2px solid rgba(56,182,255,0.4);background:rgba(56,182,255,0.1);color:#60c4ff;cursor:none;width:100%;margin-top:8px;">🔄 Play Again</button>
+      </div>`;
+    setTimeout(() => {
+      const b = document.getElementById('resetEvent2Btn');
+      if (b) b.addEventListener('click', () => { event2State='idle'; renderShop(); });
+    }, 0);
+  }
 }
 
 function spawnSplash(text, isRare=false) {
@@ -1720,9 +1841,39 @@ function renderBizarreShop() {
 
 // ── CODES ─────────────────────────────────────────────────────────────────────
 const CODES = {
-  'JOJO': { reward:'seal', sealId:'bizarre', msg:'🌀 ZA WARUDO... Bizarre Seal unlocked!!' },
+  'JOJO':     { reward:'seal',  sealId:'bizarre', msg:'🌀 ZA WARUDO... Bizarre Seal unlocked!!' },
+  'FISHKING': { reward:'buff',                    msg:'👑 FISH KING! 2× fish & cheaper upgrades!' },
 };
 const usedCodes = new Set();
+
+function activateFishKing() {
+  buffFishKing = true;
+  fishKingTimeLeft = FISH_KING_DURATION;
+  const banner = document.getElementById('fishKingBanner');
+  if (banner) banner.classList.add('show');
+  if (fishKingTimer) clearInterval(fishKingTimer);
+  fishKingTimer = setInterval(() => {
+    fishKingTimeLeft--;
+    const h = Math.floor(fishKingTimeLeft / 3600);
+    const m = Math.floor((fishKingTimeLeft % 3600) / 60);
+    const s = fishKingTimeLeft % 60;
+    const timeStr = h > 0
+      ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      : `${m}:${String(s).padStart(2,'0')}`;
+    const el = document.getElementById('fishKingTime');
+    if (el) el.textContent = timeStr + ' remaining';
+    const bar = document.getElementById('fishKingBar');
+    if (bar) bar.style.width = (fishKingTimeLeft / FISH_KING_DURATION * 100) + '%';
+    if (fishKingTimeLeft <= 0) {
+      clearInterval(fishKingTimer); fishKingTimer = null;
+      buffFishKing = false;
+      if (banner) banner.classList.remove('show');
+      spawnSplash('👑 Fish King expired!', false);
+      wallySay('Fish King buff expired... 👑');
+      saveGame();
+    }
+  }, 1000);
+}
 
 function redeemCode() {
   const input = document.getElementById('codeInput');
@@ -1738,9 +1889,12 @@ function redeemCode() {
     const seal = specialSeals.find(s => s.id === def.sealId);
     if (seal) { seal.owned = Math.max(seal.owned, 1); seal.hidden = false; }
   }
+  if (def.reward === 'buff') {
+    activateFishKing();
+  }
   showCodeMsg(def.msg, '#4ecb71');
   spawnSplash('🎟️ Code redeemed!', true);
-  if (def.sealId) { switchTab('seals'); toggleSettings(); }
+  if (def.reward === 'seal' && def.sealId) { switchTab('seals'); toggleSettings(); }
   saveGame(); updateUI();
 }
 
@@ -1775,15 +1929,33 @@ const STORY_CHAPTERS = [
     author:'— The Seal Chronicle, Vol. I'
   },
   {
+    id:'ch1b', trigger:500,
+    chapter:'Chapter I — Interlude', title:'The Name on the Ice',
+    text:'The other seals had a name for him now. They carved it into the ice with their claws, though none could agree on the spelling.\n\nIt did not matter. Names were just sounds. The fish were real.',
+    author:'— The Seal Chronicle, Vol. I'
+  },
+  {
     id:'ch2', trigger:1000,
     chapter:'Chapter II', title:'The Weight of a Thousand',
     text:'Word spread across the ice. Other creatures watched in disbelief as the sea began to yield its bounty — fish by fish, tide by tide. The seal did not rest.\n\n"One thousand," he declared, his voice echoing across the frozen expanse. "And I have only just begun."',
     author:'— The Seal Chronicle, Vol. I'
   },
   {
+    id:'ch2b', trigger:5000,
+    chapter:'Chapter II — Interlude', title:"Niko's Dream",
+    text:'Sleepy Niko dreamed of a seal who never tired. In the dream, the sea was made of fish and the sky was made of fish and even the dreams were made of fish.\n\nHe woke up hungry. He went back to sleep.\n\nSomewhere out there, the seal kept clicking.',
+    author:'— The Seal Chronicle, Vol. I'
+  },
+  {
     id:'ch3', trigger:10000,
     chapter:'Chapter III', title:'The Ocean Awakens',
     text:'The deep stirred. Ancient currents shifted. The ocean itself had taken notice of the one who dared to claim its riches.\n\nFrom the abyss, a sound rose — not threatening, but... watching. The seal pressed on, undeterred.',
+    author:'— The Seal Chronicle, Vol. II'
+  },
+  {
+    id:'ch3b', trigger:25000,
+    chapter:'Chapter III — Interlude', title:'Hootie Speaks',
+    text:'Hootie watched from the tallest ice shelf for three days without blinking.\n\n"Unwise," he said at last, to no one in particular. "The sea remembers those who take too much."\n\nThen he caught a fish himself, because he was also hungry.',
     author:'— The Seal Chronicle, Vol. II'
   },
   {
@@ -1799,9 +1971,21 @@ const STORY_CHAPTERS = [
     author:'— The Seal Chronicle, Vol. III'
   },
   {
+    id:'ch5b', trigger:250000,
+    chapter:'Chapter V — Interlude', title:"The Sorry Seal's Confession",
+    text:"The Sorry Seal sat alone at the water's edge.\n\n\"I don't know what I'm sorry for,\" he admitted quietly. \"I just always have been.\"\n\nThe ocean didn't answer. But it gave him a fish anyway. He apologised for accepting it.",
+    author:'— The Seal Chronicle, Vol. III'
+  },
+  {
     id:'ch6', trigger:500000,
     chapter:'Chapter VI', title:'The Dark Water Stirs',
     text:'Something ancient moved beneath the surface. A shadow without shape. A presence without name.\n\nThe seal had grown powerful enough that even the forgotten depths had begun to take notice. Whatever lay below... it was no longer sleeping.',
+    author:'— The Seal Chronicle, Vol. III'
+  },
+  {
+    id:'ch6b', trigger:750000,
+    chapter:'Chapter VI — Interlude', title:'The Voice Below',
+    text:'It spoke once. Just once.\n\nNot in words. In pressure. In cold. In the particular way the water moved at 3am when every other creature was asleep.\n\nThe seal felt it in his flippers. He clicked faster.',
     author:'— The Seal Chronicle, Vol. III'
   },
   {
@@ -1811,9 +1995,21 @@ const STORY_CHAPTERS = [
     author:'— The Seal Chronicle, Vol. IV'
   },
   {
+    id:'ch7b', trigger:2500000,
+    chapter:'Chapter VII — Interlude', title:'What Wally Knows',
+    text:"Wally had been running the shop for longer than anyone could remember. He had sold upgrades to heroes and fools alike.\n\n\"The ones who make it,\" he said, polishing a fish bucket, \"they never stop. Not for sleep. Not for doubt. Not for anything.\"\n\nHe looked up.\n\n\"You haven't stopped yet.\"",
+    author:'— The Seal Chronicle, Vol. IV'
+  },
+  {
     id:'ch8', trigger:10000000,
     chapter:'Chapter VIII', title:'Beyond the Known Sea',
     text:'Charts had run out. Maps had no edges left to draw. The seal had ventured further than any creature before — into waters that had no name, where the fish swam in rivers of pure light.\n\n"Ten million," said the sea. "You have earned the right to know my true name."',
+    author:'— The Seal Chronicle, Vol. IV'
+  },
+  {
+    id:'ch8b', trigger:50000000,
+    chapter:'Chapter VIII — Interlude', title:'The Bizarre Truth',
+    text:'The Bizarre Seal appeared without warning, as it always did.\n\n"ZA WARUDO," it said.\n\nTime stopped. The fish hung in the water. The waves froze mid-crash.\n\nFor three seconds, the universe held its breath.\n\nThen it started again. The seal caught seventeen fish in those three seconds. No one could explain it. No one tried.',
     author:'— The Seal Chronicle, Vol. IV'
   },
   {
@@ -1823,10 +2019,22 @@ const STORY_CHAPTERS = [
     author:'— The Seal Chronicle, Vol. V'
   },
   {
+    id:'ch9b', trigger:500000000,
+    chapter:'Chapter IX — Interlude', title:'The Lucky Seal Appears',
+    text:'No one had ever actually seen the Lucky Seal.\n\nThey had heard stories. A flash of green. A sound like the universe exhaling. Fish beyond counting, appearing from nowhere.\n\nOne in a billion, they said. One in a billion.\n\nThe seal did not wait for luck. The seal made its own.',
+    author:'— The Seal Chronicle, Vol. V'
+  },
+  {
     id:'ch10', trigger:1000000000,
     chapter:'Chapter X', title:'God of the Ocean',
     text:'The ocean knelt.\n\nOne billion fish. The unfathomable made real. The seal did not speak — there were no words left in any tongue to describe what had been accomplished.\n\nThe waves bowed. The deep was silent.\n\nAnd so the Chronicle ends — not with death, but with eternity.',
     author:'— The Seal Chronicle, Final Volume'
+  },
+  {
+    id:'ch11', trigger:5000000000,
+    chapter:'Epilogue', title:'After the Chronicle',
+    text:'The chronicler put down his quill.\n\nThe story was supposed to be over. The final volume was sealed. The ocean had knelt.\n\nAnd yet the clicking continued.\n\nHe opened a new page.',
+    author:'— Found scrawled on the back cover of the Final Volume'
   },
 ];
 
