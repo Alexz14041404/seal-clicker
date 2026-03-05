@@ -667,28 +667,28 @@ const ACHIEVEMENTS = [
   { id:'mg_250',       icon:'🐡', name:'Minigame Pro',        desc:'Catch 250 fish in the minigame', reward:15000,   check:()=>mgTotalCaught>=250,      prog:()=>Math.min(mgTotalCaught,250)/250 },
   { id:'mg_1000',      icon:'🏆', name:'Minigame Legend',     desc:'Catch 1,000 fish in the minigame',reward:100000, check:()=>mgTotalCaught>=1000,     prog:()=>Math.min(mgTotalCaught,1000)/1000 },
   // Special seals
-  { id:'seal_niko',    icon:'😴', name:'Niko Unlocked',       desc:'Unlock Sleepy Niko',             reward:500,     check:()=>specialSeals.find(s=>s.id==='niko')?.owned>=1,          prog:()=>specialSeals.find(s=>s.id==='niko')?.owned>=1?1:0 },
-  { id:'seal_hootie',  icon:'🦉', name:'Hootie Unlocked',     desc:'Unlock Hootie',                  reward:1000,    check:()=>specialSeals.find(s=>s.id==='hootie')?.owned>=1,        prog:()=>specialSeals.find(s=>s.id==='hootie')?.owned>=1?1:0 },
-  { id:'seal_lucky',   icon:'🍀', name:'Feeling Lucky',       desc:'Unlock Lucky Seal',              reward:1,       check:()=>specialSeals.find(s=>s.id==='lucky')?.owned>=1,         prog:()=>specialSeals.find(s=>s.id==='lucky')?.owned>=1?1:0 },
-  { id:'seal_all',     icon:'✨', name:'Seal Whisperer',      desc:'Unlock all special seals',       reward:250000,  check:()=>specialSeals.every(s=>s.owned>=1),                      prog:()=>specialSeals.filter(s=>s.owned>=1).length/specialSeals.length },
+  { id:'seal_niko',    icon:'😴', name:'Niko Unlocked',       desc:'Unlock Sleepy Niko',             reward:500,     persistent:true, check:()=>specialSeals.find(s=>s.id==='niko')?.owned>=1,          prog:()=>specialSeals.find(s=>s.id==='niko')?.owned>=1?1:0 },
+  { id:'seal_hootie',  icon:'🦉', name:'Hootie Unlocked',     desc:'Unlock Hootie',                  reward:1000,    persistent:true, check:()=>specialSeals.find(s=>s.id==='hootie')?.owned>=1,        prog:()=>specialSeals.find(s=>s.id==='hootie')?.owned>=1?1:0 },
+  { id:'seal_lucky',   icon:'🍀', name:'Feeling Lucky',       desc:'Unlock Lucky Seal',              reward:1,       persistent:true, check:()=>specialSeals.find(s=>s.id==='lucky')?.owned>=1,         prog:()=>specialSeals.find(s=>s.id==='lucky')?.owned>=1?1:0 },
+  { id:'seal_all',     icon:'✨', name:'Seal Whisperer',      desc:'Unlock all special seals',       reward:250000,  persistent:true, check:()=>specialSeals.every(s=>s.owned>=1),                      prog:()=>specialSeals.filter(s=>s.owned>=1).length/specialSeals.length },
   // Fish per click
   { id:'fpc_10',       icon:'🎣', name:'Power Clicker',       desc:'Reach 10 fish per click',        reward:2000,    check:()=>fishPerClick>=10,        prog:()=>Math.min(fishPerClick,10)/10 },
   { id:'fpc_100',      icon:'🔱', name:'Deep Sea Fisher',     desc:'Reach 100 fish per click',       reward:20000,   check:()=>fishPerClick>=100,       prog:()=>Math.min(fishPerClick,100)/100 },
   { id:'fpc_500',      icon:'🌟', name:'Trident Wielder',     desc:'Reach 500 fish per click',           reward:150000,  check:()=>fishPerClick>=500,                                      prog:()=>Math.min(fishPerClick,500)/500 },
   { id:'fpc_5000',     icon:'👁️', name:'Ocean Oracle',        desc:'Reach 5,000 fish per click',          reward:1000000, check:()=>fishPerClick>=5000,                                     prog:()=>Math.min(fishPerClick,5000)/5000 },
-  // Rebirth milestones
-  { id:'rebirth_1',    icon:'🔄', name:'Born Again',          desc:'Rebirth for the first time',           reward:500,     check:()=>rebirthCount>=1,                                        prog:()=>Math.min(rebirthCount,1)/1 },
-  { id:'rebirth_5',    icon:'🔥', name:'Serial Rebirther',    desc:'Rebirth 5 times',                      reward:10000,   check:()=>rebirthCount>=5,                                        prog:()=>Math.min(rebirthCount,5)/5 },
-  { id:'rebirth_10',   icon:'♾️', name:'Eternal Cycle',       desc:'Rebirth 10 times',                     reward:100000,  check:()=>rebirthCount>=10,                                       prog:()=>Math.min(rebirthCount,10)/10 },
-  // Rebirth coins
-  { id:'rc_10',        icon:'🔥', name:'Coin Collector',      desc:'Earn 10 Rebirth Coins total',          reward:5000,    check:()=>rebirthCoins>=10,                                       prog:()=>Math.min(rebirthCoins,10)/10 },
-  { id:'rc_50',        icon:'💎', name:'Coin Hoarder',        desc:'Have 50 Rebirth Coins at once',        reward:25000,   check:()=>rebirthCoins>=50,                                       prog:()=>Math.min(rebirthCoins,50)/50 },
-  // Bizarre
-  { id:'bizarre_1',    icon:'🌀', name:'Za Warudo',           desc:'See the Bizarre Seal once',            reward:5000,    check:()=>bizarreVisits>=1,                                       prog:()=>Math.min(bizarreVisits,1)/1 },
-  { id:'bizarre_10',   icon:'🌀', name:'Ora Ora Ora',         desc:'See the Bizarre Seal 10 times',        reward:50000,   check:()=>bizarreVisits>=10,                                      prog:()=>Math.min(bizarreVisits,10)/10 },
-  { id:'bizarre_coins5',icon:'💜',name:'Bizarre Spender',     desc:'Have 5 Bizarre Coins',                 reward:10000,   check:()=>bizarreCoins>=5,                                        prog:()=>Math.min(bizarreCoins,5)/5 },
-  // Luck Overdrive
-  { id:'overdrive_1',  icon:'⚡', name:'Overdrive!',          desc:'Trigger Luck Overdrive once',          reward:20000,   check:()=>luckOverdriveTimestamps.length===0&&luckOverdriveActive,prog:()=>luckOverdriveActive?1:0 },
+  // Rebirth milestones — persistent
+  { id:'rebirth_1',    icon:'🔄', name:'Born Again',          desc:'Rebirth for the first time',           reward:500,     persistent:true, check:()=>rebirthCount>=1,                                        prog:()=>Math.min(rebirthCount,1)/1 },
+  { id:'rebirth_5',    icon:'🔥', name:'Serial Rebirther',    desc:'Rebirth 5 times',                      reward:10000,   persistent:true, check:()=>rebirthCount>=5,                                        prog:()=>Math.min(rebirthCount,5)/5 },
+  { id:'rebirth_10',   icon:'♾️', name:'Eternal Cycle',       desc:'Rebirth 10 times',                     reward:100000,  persistent:true, check:()=>rebirthCount>=10,                                       prog:()=>Math.min(rebirthCount,10)/10 },
+  // Rebirth coins — persistent
+  { id:'rc_10',        icon:'🔥', name:'Coin Collector',      desc:'Earn 10 Rebirth Coins total',          reward:5000,    persistent:true, check:()=>rebirthCoins>=10,                                       prog:()=>Math.min(rebirthCoins,10)/10 },
+  { id:'rc_50',        icon:'💎', name:'Coin Hoarder',        desc:'Have 50 Rebirth Coins at once',        reward:25000,   persistent:true, check:()=>rebirthCoins>=50,                                       prog:()=>Math.min(rebirthCoins,50)/50 },
+  // Bizarre — persistent
+  { id:'bizarre_1',    icon:'🌀', name:'Za Warudo',           desc:'See the Bizarre Seal once',            reward:5000,    persistent:true, check:()=>bizarreVisits>=1,                                       prog:()=>Math.min(bizarreVisits,1)/1 },
+  { id:'bizarre_10',   icon:'🌀', name:'Ora Ora Ora',         desc:'See the Bizarre Seal 10 times',        reward:50000,   persistent:true, check:()=>bizarreVisits>=10,                                      prog:()=>Math.min(bizarreVisits,10)/10 },
+  { id:'bizarre_coins5',icon:'💜',name:'Bizarre Spender',     desc:'Have 5 Bizarre Coins',                 reward:10000,   persistent:true, check:()=>bizarreCoins>=5,                                        prog:()=>Math.min(bizarreCoins,5)/5 },
+  // Luck Overdrive — persistent
+  { id:'overdrive_1',  icon:'⚡', name:'Overdrive!',          desc:'Trigger Luck Overdrive once',          reward:20000,   persistent:true, check:()=>luckOverdriveTimestamps.length===0&&luckOverdriveActive,prog:()=>luckOverdriveActive?1:0 },
   // Minigame more
   { id:'mg_5k',        icon:'🎯', name:'Minigame Master',     desc:'Catch 5,000 fish in the minigame',     reward:500000,  check:()=>mgTotalCaught>=5000,                                    prog:()=>Math.min(mgTotalCaught,5000)/5000 },
   // Events
@@ -705,6 +705,7 @@ const ACHIEVEMENTS = [
 const achievClaimed = new Set();
 
 function checkAchievements() {
+  if (isRebirthing) return;
   const unclaimed = ACHIEVEMENTS.filter(a => !achievClaimed.has(a.id) && a.check()).length;
   const badge = document.getElementById('achievBadge');
   if (badge) { badge.textContent = unclaimed; badge.style.display = unclaimed > 0 ? 'block' : 'none'; }
@@ -776,6 +777,7 @@ function renderAchievements() {
 // ── REBIRTH SYSTEM ────────────────────────────────────────────────────────────
 let rebirthCoins = 0;
 let rebirthCount = 0;
+let isRebirthing = false;
 
 // How many RC you'd earn if you rebirthed now
 function calcRebirthCoins() {
@@ -783,16 +785,16 @@ function calcRebirthCoins() {
 }
 
 const rebirthUpgrades = [
-  { id:'rc_click1',   icon:'👆', name:'Click Power I',     desc:'+1 fish/click permanently',     cost:1,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=1; } },
-  { id:'rc_click2',   icon:'💪', name:'Click Power II',    desc:'+3 fish/click permanently',     cost:3,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=3; } },
-  { id:'rc_click3',   icon:'🔱', name:'Click Power III',   desc:'+10 fish/click permanently',    cost:8,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=10; } },
-  { id:'rc_click4',   icon:'⚡', name:'Click Power IV',    desc:'+50 fish/click permanently',    cost:20, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=50; } },
-  { id:'rc_click5',   icon:'🌟', name:'Click Power V',     desc:'+200 fish/click permanently',   cost:60, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=200; } },
-  { id:'rc_multi',    icon:'✖️', name:'Fish Multiplier',   desc:'All fish earnings ×1.5',        cost:5,  maxOwned:3,  owned:0, apply:()=>{ rebirthMultiplier*=1.5; } },
-  { id:'rc_auto',     icon:'⚙️', name:'Auto Boost',        desc:'Auto-clickers 25% faster',      cost:4,  maxOwned:4,  owned:0, apply:()=>{ rebirthAutoMult*=0.75; } },
-  { id:'rc_lucky',    icon:'🍀', name:'Lucky Aura',        desc:'Rare seal chances +10%',        cost:6,  maxOwned:5,  owned:0, apply:()=>{ rebirthLuckMult*=1.1; } },
-  { id:'rc_start',    icon:'🎁', name:'Head Start',        desc:'Start each run with 500 fish',  cost:3,  maxOwned:5,  owned:0, apply:()=>{ rebirthStartFish+=500; } },
-  { id:'rc_prestige', icon:'👑', name:'Prestige Aura',     desc:'Shop costs 10% cheaper',        cost:10, maxOwned:3,  owned:0, apply:()=>{ rebirthCostMult*=0.9; } },
+  { id:'rc_click1',   icon:'👆', name:'Click Power I',     desc:'+1 fish/click permanently',     cost:2,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=1; } },
+  { id:'rc_click2',   icon:'💪', name:'Click Power II',    desc:'+3 fish/click permanently',     cost:5,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=3; } },
+  { id:'rc_click3',   icon:'🔱', name:'Click Power III',   desc:'+10 fish/click permanently',    cost:12, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=10; } },
+  { id:'rc_click4',   icon:'⚡', name:'Click Power IV',    desc:'+50 fish/click permanently',    cost:30, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=50; } },
+  { id:'rc_click5',   icon:'🌟', name:'Click Power V',     desc:'+200 fish/click permanently',   cost:80, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=200; } },
+  { id:'rc_multi',    icon:'✖️', name:'Fish Multiplier',   desc:'All fish earnings ×1.25',       cost:8,  maxOwned:3,  owned:0, apply:()=>{ rebirthMultiplier*=1.25; } },
+  { id:'rc_auto',     icon:'⚙️', name:'Auto Boost',        desc:'Auto-clickers 15% faster',      cost:6,  maxOwned:3,  owned:0, apply:()=>{ rebirthAutoMult*=0.85; } },
+  { id:'rc_lucky',    icon:'🍀', name:'Lucky Aura',        desc:'Rare seal chances +5%',         cost:10, maxOwned:4,  owned:0, apply:()=>{ rebirthLuckMult*=1.05; } },
+  { id:'rc_start',    icon:'🎁', name:'Head Start',        desc:'Start each run with 250 fish',  cost:5,  maxOwned:4,  owned:0, apply:()=>{ rebirthStartFish+=250; } },
+  { id:'rc_prestige', icon:'👑', name:'Prestige Aura',     desc:'Shop costs 8% cheaper',         cost:15, maxOwned:2,  owned:0, apply:()=>{ rebirthCostMult*=0.92; } },
 ];
 
 // Rebirth multipliers (applied globally)
@@ -835,13 +837,16 @@ function doRebirth() {
   // Re-apply rebirth upgrades
   applyAllRebirthUpgrades();
   fish += rebirthStartFish; totalFish += rebirthStartFish;
-  achievClaimed.clear();
+  for (const a of ACHIEVEMENTS) { if (!a.persistent) achievClaimed.delete(a.id); }
+  bizarreVisits = 0;
+  isRebirthing = true;
   closeRebirthModal();
   spawnSplash(`🔄 Rebirth! +${earned} 🔥`, true);
   wallySay(`You were reborn! ${rebirthCount} rebirths 🔄`);
   switchTab('rebirth');
   saveGame();
   updateUI();
+  setTimeout(() => { isRebirthing = false; }, 500);
 }
 
 function renderRebirth() {
@@ -1368,6 +1373,7 @@ function renderStats() {
     ['😴 Sleepy Niko',   nikoVisits,         '#c084fc'],
     ['🦉 Hootie',        hootieVisits,       '#c084fc'],
     ['🥺 Sorry Seal',    sorryVisits,        '#c084fc'],
+    ['🌀 Bizarre Seal',  bizarreVisits,      '#c084fc'],
     ['🍀 Lucky Seal',    luckyVisits > 0 ? `${luckyVisits} 🎉` : '0', luckyVisits > 0 ? '#00ff50' : 'rgba(232,244,253,0.3)'],
   ]);
 
