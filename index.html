@@ -81,6 +81,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #sealFrame.pop { animation:framePop 0.12s ease-out; }
 @keyframes framePop{0%{transform:scale(1)}50%{transform:scale(0.96)}100%{transform:scale(1)}}
 #sealImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+#sealImg.rare-img { object-fit:contain; }
 .placeholder { display:flex; flex-direction:column; align-items:center; gap:6px; color:rgba(232,244,253,0.35); font-size:0.85rem; font-weight:700; text-transform:uppercase; }
 .placeholder .big { font-size:60px; animation:wiggle 2s ease-in-out infinite; }
 @keyframes wiggle{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
@@ -552,6 +553,7 @@ sealFrame.addEventListener('click', e => {
     // also show on frame
     sealImg.src = ss.url;
     sealImg.style.display = 'block';
+    sealImg.classList.add('rare-img');
     placeholder.style.display = 'none';
     sealFrame.classList.remove('rare-frame');
     captionEl.textContent = `✨ It's ${ss.name}!!`;
@@ -575,7 +577,7 @@ sealFrame.addEventListener('click', e => {
 
 function loadSeal(src) {
   const t=new Image();
-  t.onload=()=>{ sealImg.src=t.src; sealImg.style.display='block'; placeholder.style.display='none'; sealsShown++; updateUI(); };
+  t.onload=()=>{ sealImg.src=t.src; sealImg.style.display='block'; sealImg.classList.remove('rare-img'); placeholder.style.display='none'; sealsShown++; updateUI(); };
   t.onerror=()=>{ const p=pickSeal(); if(p.type==='normal') loadSeal(p.url); };
   t.src=src;
 }
