@@ -835,6 +835,7 @@ function doRebirth() {
   // Re-apply rebirth upgrades
   applyAllRebirthUpgrades();
   fish += rebirthStartFish; totalFish += rebirthStartFish;
+  achievClaimed.clear();
   closeRebirthModal();
   spawnSplash(`🔄 Rebirth! +${earned} 🔥`, true);
   wallySay(`You were reborn! ${rebirthCount} rebirths 🔄`);
