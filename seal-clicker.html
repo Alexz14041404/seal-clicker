@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦭 Seal Clicker</title>
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --ocean:#0a2a4a; --wave:#1a4a7a; --foam:#e8f4fd;
+  --coral:#ff6b6b; --sand:#f9e4b7; --gold:#ffd700;
+  --green:#4ecb71; --shop-bg:#071e33;
+  --rare:#c084fc; --rare-glow:#a855f7;
+}
+html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); font-family:'Nunito',sans-serif; cursor:none; user-select:none; }
+
+#cursor { position:fixed; font-size:24px; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); transition:transform 0.05s; }
+#cursor.clicked { transform:translate(-50%,-50%) scale(0.7); }
+
+#bgCanvas { position:fixed; inset:0; z-index:0; pointer-events:none; width:100%; height:100%; }
+
+/* TOP BAR */
+#topbar {
+  position:relative; z-index:100; height:52px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; background:rgba(7,30,51,0.9);
+  border-bottom:2px solid rgba(255,255,255,0.07);
+}
+#topbar h1 { font-family:'Boogaloo',cursive; font-size:1.5rem; color:var(--foam); letter-spacing:1px; }
+.topright { display:flex; align-items:center; gap:10px; }
+#perSec { font-size:0.78rem; color:rgba(249,228,183,0.5); font-weight:600; }
+#wallet { display:flex; align-items:center; gap:6px; background:rgba(255,215,0,0.12); border:2px solid rgba(255,215,0,0.35); border-radius:30px; padding:4px 12px; }
+#wallet .coin { font-size:1.2rem; }
+#fishCount { font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--gold); min-width:50px; text-align:right; }
+#wallet .label { font-size:0.7rem; color:rgba(249,228,183,0.55); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+
+/* SAVE TOAST */
+#saveToast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:rgba(78,203,113,0.92); color:#071e33; font-family:'Boogaloo',cursive; font-size:1rem; padding:8px 20px; border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,0.4); z-index:500; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+#saveToast.show { opacity:1; }
+
+/* RARE POPUP — left side toast, no overlay */
+#rarePopup {
+  position:fixed; left:16px; bottom:80px; z-index:400;
+  pointer-events:none; opacity:0;
+  transform:translateX(-120%);
+  transition:opacity 0.35s, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+#rarePopup.show { opacity:1; pointer-events:all; transform:translateX(0); }
+#rareCard {
+  background:linear-gradient(135deg,rgba(26,10,46,0.97),rgba(13,31,60,0.97));
+  border:2px solid var(--rare);
+  border-radius:18px; padding:14px 16px;
+  display:flex; flex-direction:row; align-items:center; gap:12px;
+  box-shadow:0 0 30px rgba(168,85,247,0.45), 0 4px 20px rgba(0,0,0,0.6);
+  width:260px;
+  cursor:none;
+}
+#rareImg { width:72px; height:72px; object-fit:cover; border-radius:12px; border:2px solid var(--rare); box-shadow:0 0 14px rgba(168,85,247,0.4); flex-shrink:0; }
+#rareTextBlock { display:flex; flex-direction:column; gap:3px; }
+.rare-badge { font-family:'Boogaloo',cursive; font-size:0.7rem; letter-spacing:1.5px; color:var(--rare); text-transform:uppercase; }
+#rareName { font-family:'Boogaloo',cursive; font-size:1.2rem; color:var(--foam); }
+#rareMsg { font-size:0.72rem; color:rgba(232,244,253,0.65); line-height:1.4; }
+#rareFish { font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold); }
+#rareClose { display:none; }
+
+/* MAIN */
+#main { position:relative; z-index:10; display:flex; height:calc(100vh - 52px); overflow:hidden; }
+
+/* CLICKER */
+#clickerArea { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px; gap:10px; overflow:hidden; }
+.seal-frame-wrap { position:relative; width:100%; display:flex; justify-content:center; }
+#sealFrame {
+  width:min(340px, calc(100vw - 520px - 40px));
+  aspect-ratio:1/1; border-radius:18px; border:4px solid var(--sand);
+  box-shadow:0 8px 40px rgba(0,0,0,0.5); overflow:hidden; background:#1a3a5a;
+  position:relative; display:flex; align-items:center; justify-content:center; cursor:none; flex-shrink:0;
+  transition:border-color 0.3s, box-shadow 0.3s;
+}
+#sealFrame.rare-frame { border-color:var(--rare); box-shadow:0 8px 40px rgba(168,85,247,0.5), 0 0 60px rgba(168,85,247,0.2); }
+#sealFrame.pop { animation:framePop 0.12s ease-out; }
+@keyframes framePop{0%{transform:scale(1)}50%{transform:scale(0.96)}100%{transform:scale(1)}}
+#sealImg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+.placeholder { display:flex; flex-direction:column; align-items:center; gap:6px; color:rgba(232,244,253,0.35); font-size:0.85rem; font-weight:700; text-transform:uppercase; }
+.placeholder .big { font-size:60px; animation:wiggle 2s ease-in-out infinite; }
+@keyframes wiggle{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+#imgCurrency { position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.65); border:2px solid rgba(255,215,0,0.5); border-radius:20px; padding:3px 10px; display:flex; align-items:center; gap:4px; z-index:10; }
+#imgCurrencyVal { font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold); }
+.flash { position:absolute; inset:0; background:white; border-radius:13px; opacity:0; pointer-events:none; z-index:5; }
+.flash.go { animation:flashPop 0.3s ease-out forwards; }
+@keyframes flashPop{0%{opacity:0.55}100%{opacity:0}}
+#spinner { display:none; position:absolute; width:32px; height:32px; border:3px solid rgba(255,255,255,0.1); border-top-color:var(--foam); border-radius:50%; animation:spin 0.8s linear infinite; z-index:6; }
+@keyframes spin{to{transform:rotate(360deg)}}
+#caption { font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--sand); text-align:center; min-height:24px; }
+#clickHint { font-size:0.72rem; color:rgba(232,244,253,0.3); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+
+/* PARTICLES */
+.particle { position:fixed; pointer-events:none; z-index:200; font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--gold); font-weight:700; text-shadow:0 2px 4px rgba(0,0,0,0.5); animation:particleUp 0.85s ease-out forwards; }
+.particle.rare { color:var(--rare); font-size:1.3rem; }
+@keyframes particleUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-70px);opacity:0}}
+
+/* SHOP TABS */
+#shop { width:260px; flex-shrink:0; background:var(--shop-bg); border-left:2px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; overflow:hidden; }
+#shopHeader { padding:11px 14px 0; font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--foam); border-bottom:1px solid rgba(255,255,255,0.07); }
+.tab-row { display:flex; gap:0; margin-top:8px; }
+.tab { flex:1; font-family:'Boogaloo',cursive; font-size:0.85rem; padding:6px 0; text-align:center; color:rgba(232,244,253,0.4); border-bottom:2px solid transparent; cursor:none; transition:color 0.2s, border-color 0.2s; }
+.tab.active { color:var(--foam); border-color:var(--gold); }
+.tab:hover { color:rgba(232,244,253,0.8); }
+.tab.rare-tab.active { color:var(--rare); border-color:var(--rare); }
+
+#shopList { flex:1; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:7px; }
+#shopList::-webkit-scrollbar{width:3px;}
+#shopList::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
+
+.shop-item { background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.08); border-radius:11px; padding:9px 11px; display:flex; flex-direction:column; gap:3px; transition:background 0.15s, border-color 0.15s; cursor:none; }
+.shop-item:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,215,0,0.3);}
+.shop-item.can-afford{border-color:rgba(78,203,113,0.4);}
+.shop-item.can-afford:hover{background:rgba(78,203,113,0.08);border-color:rgba(78,203,113,0.65);}
+.shop-item.buying{animation:buyPop 0.22s cubic-bezier(0.34,1.56,0.64,1);}
+.shop-item.rare-item { border-color:rgba(192,132,252,0.2); padding:12px 13px; }
+.shop-item.rare-item.can-afford { border-color:rgba(192,132,252,0.6); }
+.shop-item.rare-item.can-afford:hover { background:rgba(168,85,247,0.1); }
+.shop-item.owned-seal { border-color:rgba(78,203,113,0.5); background:rgba(78,203,113,0.05); }
+@keyframes buyPop{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+.item-top{display:flex;align-items:center;justify-content:space-between;}
+.item-name{font-family:'Boogaloo',cursive;font-size:0.95rem;color:var(--foam);}
+.item-name.rare-name { color:var(--rare); }
+.item-owned{font-family:'Boogaloo',cursive;font-size:1rem;color:var(--gold);background:rgba(255,215,0,0.1);border-radius:7px;padding:1px 7px;}
+.item-owned.rare-owned { color:var(--rare); background:rgba(168,85,247,0.12); }
+.item-desc{font-size:0.68rem;color:rgba(232,244,253,0.38);font-weight:600;}
+.item-cost{display:flex;align-items:center;gap:3px;font-family:'Boogaloo',cursive;font-size:0.9rem;margin-top:1px;}
+.affordable{color:var(--green);}
+.too-expensive{color:rgba(232,244,253,0.28);}
+.rare-chance { font-size:0.62rem; color:var(--rare); font-weight:700; letter-spacing:0.5px; margin-top:1px; }
+
+/* seal preview thumbnail in shop */
+.seal-thumb { width:100%; height:130px; object-fit:contain; border-radius:10px; background:rgba(0,0,0,0.3); margin-bottom:5px; border:2px solid rgba(192,132,252,0.25); }
+
+#statsBar { padding:9px 12px; border-top:1px solid rgba(255,255,255,0.07); font-size:0.68rem; color:rgba(232,244,253,0.3); font-weight:600; line-height:1.8; display:flex; flex-direction:column; gap:0; }
+.save-row { display:flex; align-items:center; justify-content:space-between; margin-top:4px; }
+#saveBtn { font-family:'Boogaloo',cursive; font-size:0.8rem; background:rgba(78,203,113,0.18); border:1.5px solid rgba(78,203,113,0.4); color:var(--green); border-radius:10px; padding:2px 10px; cursor:none; transition:background 0.2s; }
+#saveBtn:hover { background:rgba(78,203,113,0.35); }
+#saveInfo { font-size:0.62rem; color:rgba(78,203,113,0.45); }
+
+/* splashes */
+.splash{position:fixed;font-family:'Boogaloo',cursive;font-size:1.8rem;color:var(--sand);text-shadow:0 2px 10px rgba(0,0,0,0.5);pointer-events:none;z-index:300;animation:splashAnim 1s ease-out forwards;}
+.splash.rare-splash { color:var(--rare); font-size:2.2rem; text-shadow:0 0 20px rgba(168,85,247,0.8); }
+@keyframes splashAnim{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1}100%{transform:translate(-50%,-250%) scale(0.8);opacity:0}}
+.autopulse{position:absolute;inset:0;border-radius:13px;border:3px solid rgba(78,203,113,0.55);pointer-events:none;z-index:7;animation:autoPing 0.4s ease-out forwards;}
+@keyframes autoPing{0%{opacity:0.9;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+
+/* SETTINGS BTN */
+#settingsBtn { font-size:1.1rem; background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.15); color:var(--foam); border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; }
+#settingsBtn:hover { background:rgba(255,255,255,0.18); }
+
+/* SETTINGS PANEL */
+#settingsPanel {
+  position:fixed; top:52px; right:0; bottom:0; width:300px; z-index:300;
+  background:rgba(5,18,32,0.97); border-left:2px solid rgba(255,255,255,0.08);
+  display:flex; flex-direction:column; backdrop-filter:blur(10px);
+  transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+#settingsPanel.open { transform:translateX(0); }
+#settingsHeader { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.07); font-family:'Boogaloo',cursive; font-size:1.2rem; color:var(--foam); }
+#settingsClose { background:none; border:none; color:rgba(232,244,253,0.4); font-size:1.1rem; cursor:none; transition:color 0.2s; }
+#settingsClose:hover { color:var(--foam); }
+#settingsBody { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:18px; }
+#settingsBody::-webkit-scrollbar{width:3px;}
+#settingsBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+.settings-section { display:flex; flex-direction:column; gap:8px; }
+.settings-label { font-family:'Boogaloo',cursive; font-size:0.95rem; color:rgba(232,244,253,0.5); letter-spacing:1px; text-transform:uppercase; }
+
+/* Discord btn */
+#discordBtn { display:flex; align-items:center; justify-content:space-between; background:rgba(88,101,242,0.18); border:1.5px solid rgba(88,101,242,0.4); border-radius:12px; padding:10px 14px; color:var(--foam); text-decoration:none; font-family:'Boogaloo',cursive; font-size:1rem; transition:background 0.2s; cursor:none; }
+#discordBtn:hover { background:rgba(88,101,242,0.35); }
+
+/* Settings rows */
+.settings-row { display:flex; align-items:center; gap:8px; }
+.settings-hint { flex:1; font-size:0.8rem; color:rgba(232,244,253,0.5); font-weight:600; }
+.settings-row input[type=range] { flex:1; accent-color:var(--gold); cursor:none; }
+#soundVolVal { font-size:0.72rem; color:rgba(232,244,253,0.35); min-width:22px; }
+
+/* Toggle switch */
+.toggle { position:relative; width:38px; height:22px; flex-shrink:0; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:22px; border:1.5px solid rgba(255,255,255,0.15); transition:background 0.2s; }
+.toggle-slider:before { content:''; position:absolute; width:14px; height:14px; left:3px; top:50%; transform:translateY(-50%); background:rgba(232,244,253,0.5); border-radius:50%; transition:transform 0.2s, background 0.2s; }
+.toggle input:checked + .toggle-slider { background:rgba(255,215,0,0.25); border-color:rgba(255,215,0,0.5); }
+.toggle input:checked + .toggle-slider:before { transform:translate(16px,-50%); background:var(--gold); }
+/* MINIGAME */
+#minigame { width:100%; display:flex; flex-direction:column; align-items:center; gap:10px; padding:8px 0; }
+#mgTitle { font-family:'Boogaloo',cursive; font-size:1.1rem; color:var(--foam); }
+#mgDesc { font-size:0.72rem; color:rgba(232,244,253,0.4); text-align:center; line-height:1.5; }
+#mgBoard {
+  position:relative; width:220px; height:220px;
+  background:rgba(0,0,0,0.35); border:2px solid rgba(255,255,255,0.1);
+  border-radius:14px; overflow:hidden; cursor:none;
+}
+#mgTimer { font-family:'Boogaloo',cursive; font-size:0.9rem; color:var(--sand); }
+#mgScore { font-family:'Boogaloo',cursive; font-size:0.9rem; color:var(--gold); }
+#mgRow { display:flex; gap:12px; align-items:center; }
+#mgStartBtn {
+  font-family:'Boogaloo',cursive; font-size:1rem;
+  background:rgba(78,203,113,0.2); border:2px solid rgba(78,203,113,0.5);
+  color:var(--green); border-radius:12px; padding:7px 20px;
+  cursor:none; transition:background 0.2s;
+}
+#mgStartBtn:hover { background:rgba(78,203,113,0.4); }
+#mgResult { font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold); min-height:20px; text-align:center; }
+.mg-fish { position:absolute; font-size:1.4rem; cursor:none; animation:mgWobble 0.5s ease-in-out infinite alternate; }
+@keyframes mgWobble { 0%{transform:rotate(-8deg)} 100%{transform:rotate(8deg)} }
+.mg-fish.caught { animation:mgCatch 0.3s ease-out forwards; pointer-events:none; }
+@keyframes mgCatch { 0%{transform:scale(1.2);opacity:1} 100%{transform:scale(2.5);opacity:0} }
+.mg-seal { position:absolute; font-size:1.8rem; pointer-events:none; transition:left 0.5s ease, top 0.5s ease; }
+
+.star { position:fixed; pointer-events:none; z-index:201; font-size:1.4rem; animation:starFloat 1.2s ease-out forwards; }
+@keyframes starFloat{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0}}
+</style>
+</head>
+<body>
+
+<div id="cursor">🦭</div>
+<canvas id="bgCanvas"></canvas>
+<div id="saveToast">💾 Game Saved!</div>
+
+<!-- RARE POPUP -->
+<div id="rarePopup">
+  <div id="rareCard">
+    <img id="rareImg" src="" alt="rare seal" />
+    <div id="rareTextBlock">
+      <div class="rare-badge">✨ Rare!</div>
+      <div id="rareName">Sleepy Niko</div>
+      <div id="rareMsg">"zzz..."</div>
+      <div id="rareFish">+100 🐟</div>
+    </div>
+    <button id="rareClose" onclick="closeRarePopup()"></button>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settingsPanel">
+  <div id="settingsHeader">
+    <span>⚙️ Settings</span>
+    <button id="settingsClose" onclick="toggleSettings()">✕</button>
+  </div>
+  <div id="settingsBody">
+
+    <!-- Discord -->
+    <div class="settings-section">
+      <div class="settings-label">💬 Community</div>
+      <a href="https://discord.gg/B9VyPZMVGd" target="_blank" id="discordBtn">
+        <span>Join our Discord</span>
+        <span style="font-size:0.75rem;opacity:0.6">↗</span>
+      </a>
+    </div>
+
+    <!-- Click Sound -->
+    <div class="settings-section">
+      <div class="settings-label">🔊 Click Sound</div>
+      <div class="settings-row">
+        <span class="settings-hint">Enable click sound</span>
+        <label class="toggle">
+          <input type="checkbox" id="soundToggle" onchange="toggleSound(this.checked)" checked />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settings-row">
+        <span class="settings-hint">Volume</span>
+        <input type="range" id="soundVol" min="0" max="100" value="60" oninput="setSoundVol(this.value)" />
+        <span id="soundVolVal">60</span>
+      </div>
+      <div style="font-size:0.68rem;color:rgba(232,244,253,0.2);margin-top:2px;">🎵 Sound file coming soon</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <h1>🦭 Seal Clicker</h1>
+  <div class="topright">
+    <span id="perSec"></span>
+    <div id="wallet">
+      <span class="coin">🐟</span>
+      <span id="fishCount">0</span>
+      <span class="label">fish</span>
+    </div>
+    <button id="settingsBtn" onclick="toggleSettings()">⚙️</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- CLICKER -->
+  <div id="clickerArea">
+    <div class="seal-frame-wrap">
+      <div id="sealFrame">
+        <div class="placeholder" id="placeholder"><span class="big">🦭</span><span>Loading...</span></div>
+        <img id="sealImg" alt="seal" />
+        <div class="flash" id="flash"></div>
+        <div id="spinner"></div>
+        <div id="imgCurrency"><span>🐟</span><span id="imgCurrencyVal">0</span></div>
+      </div>
+    </div>
+    <div id="caption">Click the seal to earn 🐟 fish!</div>
+    <div id="clickHint">Click the seal • Buy upgrades in the shop →</div>
+  </div>
+
+  <!-- SHOP -->
+  <div id="shop">
+    <div id="shopHeader">
+      🏪 Shop
+      <div class="tab-row">
+        <div class="tab active" id="tabUpgrades" onclick="switchTab('upgrades')">⚙️ Upgrades</div>
+        <div class="tab rare-tab" id="tabSeals" onclick="switchTab('seals')">✨ Seals</div>
+        <div class="tab" id="tabGame" onclick="switchTab('game')">🎮 Game</div>
+      </div>
+    </div>
+    <div id="shopList"></div>
+    <div id="statsBar">
+      <div>Total clicks: <span id="statClicks">0</span> &nbsp;|&nbsp; Seals seen: <span id="statSeals">0</span></div>
+      <div>Fish earned: <span id="statTotal">0</span> &nbsp;|&nbsp; /click: <span id="statFpc">1</span></div>
+      <div>Niko visits: <span id="statNiko">0</span> 😴</div>
+      <div class="save-row">
+        <span id="saveInfo">No save yet</span>
+        <button id="saveBtn" onclick="saveGame()">💾 Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── cursor ──────────────────────────────────
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => { cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+
+// ── state ────────────────────────────────────
+let fish=0, totalFish=0, totalClicks=0, sealsShown=0, nikoVisits=0;
+let fishPerClick=1;
+let currentTab = 'upgrades';
+let lastSealWasRare = false;
+let pendingRarePopup = false;
+
+// ── seal pools ────────────────────────────────
+const normalSeals = [
+  "https://i.pinimg.com/736x/eb/95/a8/eb95a876b71a18ccd0341b758d757a3f.jpg",
+  "https://i.pinimg.com/1200x/e8/8f/16/e88f16f5fbfb8a9fc244f9f723cb5766.jpg",
+  "https://i.pinimg.com/736x/01/00/07/010007365637fb39d372b2fb9c6803c4.jpg",
+  "https://i.pinimg.com/736x/17/34/f7/1734f7b55522af0c924dc9994ab18b39.jpg",
+  "https://i.pinimg.com/736x/86/41/77/86417733dd3b64d716c200d765c9a3a0.jpg",
+  "https://i.pinimg.com/736x/f1/b1/da/f1b1dab2f3015d8be177913bb22c8200.jpg",
+  "https://i.pinimg.com/736x/49/ab/34/49ab34eb701d6b31ea8d77249c3c6669.jpg",
+  "https://i.pinimg.com/736x/d4/23/07/d4230780e830a07f00e8b9d9714aeaba.jpg",
+  "https://i.pinimg.com/1200x/40/90/f0/4090f01dc84cc935fa27c9afc7abbf02.jpg",
+];
+
+const specialSeals = [
+  {
+    id: 'niko',
+    name: 'Sleepy Niko',
+    icon: '😴',
+    url: "https://i.pinimg.com/1200x/12/13/0f/12130fa8937cb34ed4fc60cc8b973da3.jpg",
+    chance: 1/20,
+    fishBonus: 10,
+    messages: [
+      '"zzz... still caught you a fish tho 🐟"',
+      '"just five more minutes... 💤"',
+      '"i dreamed of fish. here. 🐟"',
+      '"niko is sleepy but niko loves you 💙"',
+      '"woke up just for you 🥱"',
+      '"...huh? oh, fish. yeah. 🐟💤"',
+    ],
+    cost: 100,
+    costMult: 3,
+    owned: 0,
+    rarity: '1/20 chance',
+  },
+  {
+    id: 'hootie',
+    name: 'Hootie',
+    icon: '🦉',
+    url: "https://i.pinimg.com/736x/0e/57/83/0e5783ece88579ed545bbcc7d67cee68.jpg",
+    chance: 1/10000,
+    fishBonus: 20,
+    messages: [
+      '"hoot hoot... here\'s your fish 🐟"',
+      '"who? who gave you fish? me. 🦉"',
+      '"a wise seal delivers fish 🐟"',
+      '"hoooooot 🦉✨"',
+      '"i see all. i give fish. 🦉"',
+    ],
+    cost: 500,
+    costMult: 3,
+    owned: 0,
+    rarity: '1/10000 chance',
+  },
+  // Add more special seals here!
+];
+
+let deck = [];
+function refill() { deck = [...normalSeals].sort(() => Math.random() - 0.5); }
+refill();
+function nextNormal() { if (!deck.length) refill(); return deck.pop(); }
+
+function pickSeal() {
+  // Check special seals
+  for (const ss of specialSeals) {
+    if (ss.owned > 0 && Math.random() < ss.chance) return { type:'special', seal:ss };
+  }
+  return { type:'normal', url: nextNormal() };
+}
+
+// ── upgrades shop items ───────────────────────
+const upgradeItems = [
+  { id:'flippers',     name:'Better Flippers',  icon:'🦭', desc:'+1 fish per click',      baseCost:10,    costMult:1.5, owned:0, effectVal:1   },
+  { id:'bucket',       name:'Fish Bucket',      icon:'🪣', desc:'+3 fish per click',      baseCost:50,    costMult:1.6, owned:0, effectVal:3   },
+  { id:'auto_pup',     name:'Seal Pup',         icon:'🐾', desc:'Auto-click every 3s',    baseCost:30,    costMult:1.8, owned:0, isAuto:true, interval:3000, cpt:1 },
+  { id:'auto_colony',  name:'Seal Colony',      icon:'🌊', desc:'Auto-click every 2s',    baseCost:120,   costMult:2.0, owned:0, isAuto:true, interval:2000, cpt:1 },
+  { id:'net',          name:'Fish Net',         icon:'🕸️', desc:'+5 fish per click',      baseCost:200,   costMult:1.7, owned:0, effectVal:5   },
+  { id:'auto_orca',    name:'Trained Orca',     icon:'🐋', desc:'Auto-click every 1s',    baseCost:400,   costMult:2.2, owned:0, isAuto:true, interval:1000, cpt:1 },
+  { id:'golden',       name:'Golden Fish',      icon:'✨', desc:'+10 fish per click',     baseCost:500,   costMult:2.0, owned:0, effectVal:10  },
+  { id:'iceberg',      name:'Iceberg Base',     icon:'🧊', desc:'Auto-click every 0.5s',  baseCost:800,   costMult:2.3, owned:0, isAuto:true, interval:500,  cpt:1 },
+  { id:'sonar',        name:'Fish Sonar',       icon:'📡', desc:'+20 fish per click',     baseCost:1200,  costMult:2.0, owned:0, effectVal:20  },
+  { id:'frenzy',       name:'Fish Frenzy',      icon:'🐟', desc:'3 auto-clicks / 1s',     baseCost:1500,  costMult:2.5, owned:0, isAuto:true, interval:1000, cpt:3 },
+  { id:'mega',         name:'Mega Seal',        icon:'🦁', desc:'+25 fish per click',     baseCost:3000,  costMult:2.0, owned:0, effectVal:25  },
+  { id:'submarine',    name:'Submarine',        icon:'🚢', desc:'5 auto-clicks / 1s',     baseCost:5000,  costMult:2.5, owned:0, isAuto:true, interval:1000, cpt:5 },
+  { id:'kraken',       name:'Tame the Kraken',  icon:'🐙', desc:'+50 fish per click',     baseCost:8000,  costMult:2.0, owned:0, effectVal:50  },
+  { id:'whirlpool',    name:'Whirlpool',        icon:'🌀', desc:'10 auto-clicks / 1s',    baseCost:15000, costMult:2.6, owned:0, isAuto:true, interval:1000, cpt:10 },
+  { id:'trident',      name:'Poseidon\'s Trident',icon:'🔱',desc:'+100 fish per click',   baseCost:25000, costMult:2.0, owned:0, effectVal:100 },
+  { id:'ocean_god',    name:'Ocean God',        icon:'🌊', desc:'20 auto-clicks / 0.5s',  baseCost:50000, costMult:2.8, owned:0, isAuto:true, interval:500,  cpt:20 },
+];
+
+const autoTimers = {};
+function startAuto(item) {
+  if (autoTimers[item.id]) return;
+  autoTimers[item.id] = setInterval(() => {
+    if (item.owned<=0) return;
+    for (let i=0; i<item.cpt*item.owned; i++) earnFish(true);
+  }, item.interval);
+}
+
+function recalcFpc() {
+  fishPerClick = 1;
+  for (const item of upgradeItems)
+    if (!item.isAuto && item.owned>0) fishPerClick += item.effectVal * item.owned;
+}
+
+function calcPerSec() {
+  let ps=0;
+  for (const item of upgradeItems)
+    if (item.isAuto && item.owned>0) ps += item.cpt * item.owned * fishPerClick * (1000/item.interval);
+  return ps;
+}
+
+function fmt(n) {
+  if (n>=1e9) return (n/1e9).toFixed(1)+'B';
+  if (n>=1e6) return (n/1e6).toFixed(1)+'M';
+  if (n>=1000) return (n/1000).toFixed(1)+'K';
+  return Math.floor(n);
+}
+
+// ── save / load ───────────────────────────────
+const SAVE_KEY = 'sealclicker_save_v2';
+
+function saveGame() {
+  const data = {
+    fish, totalFish, totalClicks, sealsShown, nikoVisits,
+    upgrades: upgradeItems.map(i=>({id:i.id,owned:i.owned})),
+    specials: specialSeals.map(s=>({id:s.id,owned:s.owned})),
+    savedAt: Date.now()
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  showSaveToast();
+  updateUI();
+}
+
+function loadGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    fish=d.fish||0; totalFish=d.totalFish||0; totalClicks=d.totalClicks||0;
+    sealsShown=d.sealsShown||0; nikoVisits=d.nikoVisits||0;
+    for (const s of (d.upgrades||[])) { const i=upgradeItems.find(x=>x.id===s.id); if(i) i.owned=s.owned||0; }
+    for (const s of (d.specials||[])) { const i=specialSeals.find(x=>x.id===s.id); if(i) i.owned=s.owned||0; }
+    for (const item of upgradeItems) if (item.isAuto && item.owned>0) startAuto(item);
+    recalcFpc();
+    const ago = Math.round((Date.now()-d.savedAt)/60000);
+    document.getElementById('saveInfo').textContent=`Loaded (${ago<1?'just now':ago+'m ago'})`;
+  } catch(e) { console.warn('load fail',e); }
+}
+
+let saveToastTimer;
+function showSaveToast() {
+  const t=document.getElementById('saveToast'); t.classList.add('show');
+  clearTimeout(saveToastTimer); saveToastTimer=setTimeout(()=>t.classList.remove('show'),2000);
+}
+setInterval(saveGame, 30000);
+
+// ── update UI ─────────────────────────────────
+function updateUI() {
+  document.getElementById('fishCount').textContent=fmt(fish);
+  document.getElementById('imgCurrencyVal').textContent=fmt(fish);
+  document.getElementById('statClicks').textContent=fmt(totalClicks);
+  document.getElementById('statTotal').textContent=fmt(totalFish);
+  document.getElementById('statSeals').textContent=sealsShown;
+  document.getElementById('statFpc').textContent=fishPerClick;
+  document.getElementById('statNiko').textContent=nikoVisits;
+  const ps=calcPerSec();
+  document.getElementById('perSec').textContent=ps>0?`+${fmt(ps)}/sec`:'';
+  const raw=localStorage.getItem(SAVE_KEY);
+  if (raw) { try { const d=JSON.parse(raw); const ago=Math.round((Date.now()-d.savedAt)/60000); document.getElementById('saveInfo').textContent=`Last save: ${ago<1?'just now':ago+'m ago'}`; } catch(e){} }
+  renderShop();
+}
+
+// ── earn fish ─────────────────────────────────
+const captions = [
+  "Nice catch! 🐟","Seal approved! 🦭","Splash! 🌊","Arf arf! 🎉",
+  "More fish! 🐟","He loves you 💙","Legendary click ✨","Keep going! 🏆",
+  "Fish secured 🪣","10/10 seal 😭","Ocean vibes 🌊","He said yes! 💚"
+];
+const rareCaptions = [
+  "IT'S NIKO!! 😭","Sleepy Niko appeared! 💜","Niko!! 🥹✨","RARE!! 💜🐟",
+];
+
+function earnFish(isAuto=false, bonus=0) {
+  const earned = fishPerClick + bonus;
+  fish += earned; totalFish += earned; totalClicks++;
+  updateUI();
+  if (isAuto) showAutoPulse();
+}
+
+// ── clicker ───────────────────────────────────
+const sealFrame=document.getElementById('sealFrame');
+const sealImg=document.getElementById('sealImg');
+const placeholder=document.getElementById('placeholder');
+const flash=document.getElementById('flash');
+const captionEl=document.getElementById('caption');
+
+sealFrame.addEventListener('click', e => {
+  const pick = pickSeal();
+
+  if (pick.type === 'special') {
+    const ss = pick.seal;
+    // Give fish + bonus immediately
+    fish += fishPerClick + ss.fishBonus;
+    totalFish += fishPerClick + ss.fishBonus;
+    totalClicks++;
+    if (ss.id==='niko') nikoVisits++;
+    spawnParticle(e.clientX, e.clientY, true, ss.fishBonus);
+    showRarePopup(ss);
+    // also show on frame
+    sealImg.src = ss.url;
+    sealImg.style.display = 'block';
+    placeholder.style.display = 'none';
+    sealFrame.classList.remove('rare-frame');
+    captionEl.textContent = `✨ It's ${ss.name}!!`;
+    sealsShown++;
+    spawnRareStars(e.clientX, e.clientY);
+  } else {
+    earnFish(false);
+    spawnParticle(e.clientX, e.clientY);
+    captionEl.textContent = captions[Math.floor(Math.random()*captions.length)];
+    sealFrame.classList.remove('rare-frame');
+    loadSeal(pick.url);
+  }
+
+  cursor.classList.add('clicked');
+  playClickSound();
+  setTimeout(()=>cursor.classList.remove('clicked'),120);
+  sealFrame.classList.remove('pop'); void sealFrame.offsetWidth; sealFrame.classList.add('pop');
+  flash.classList.remove('go'); void flash.offsetWidth; flash.classList.add('go');
+  updateUI();
+});
+
+function loadSeal(src) {
+  const t=new Image();
+  t.onload=()=>{ sealImg.src=t.src; sealImg.style.display='block'; placeholder.style.display='none'; sealsShown++; updateUI(); };
+  t.onerror=()=>{ const p=pickSeal(); if(p.type==='normal') loadSeal(p.url); };
+  t.src=src;
+}
+
+// boot load
+const first = pickSeal();
+loadSeal(first.type==='normal' ? first.url : normalSeals[0]);
+
+// ── rare popup ────────────────────────────────
+let rareTimer = null;
+function showRarePopup(ss) {
+  const msg = ss.messages[Math.floor(Math.random()*ss.messages.length)];
+  document.getElementById('rareImg').src = ss.url;
+  document.getElementById('rareName').textContent = ss.name;
+  document.getElementById('rareMsg').textContent = msg;
+  document.getElementById('rareFish').textContent = `+${ss.fishBonus} 🐟`;
+  const popup = document.getElementById('rarePopup');
+  popup.classList.add('show');
+  pendingRarePopup = true;
+  clearTimeout(rareTimer);
+  rareTimer = setTimeout(closeRarePopup, 2000);
+}
+function closeRarePopup() {
+  document.getElementById('rarePopup').classList.remove('show');
+  pendingRarePopup = false;
+}
+
+// ── particles ─────────────────────────────────
+function spawnParticle(x, y, isRare=false, bonus=0) {
+  const p=document.createElement('div');
+  p.className='particle'+(isRare?' rare':'');
+  p.textContent = isRare ? `+${fishPerClick+bonus} 🐟✨` : `+${fishPerClick} 🐟`;
+  p.style.left=(x+(Math.random()-0.5)*30)+'px';
+  p.style.top=(y-10)+'px';
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(),900);
+}
+
+function spawnRareStars(x, y) {
+  const emojis=['✨','💜','🌟','💫','🐟'];
+  for (let i=0;i<8;i++) {
+    const s=document.createElement('div');
+    s.className='star';
+    s.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    const angle=Math.random()*Math.PI*2;
+    const dist=60+Math.random()*80;
+    s.style.setProperty('--dx',Math.cos(angle)*dist+'px');
+    s.style.setProperty('--dy',Math.sin(angle)*dist+'px');
+    s.style.left=x+'px'; s.style.top=y+'px';
+    s.style.animationDelay=(Math.random()*0.2)+'s';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1400);
+  }
+}
+
+function showAutoPulse() {
+  const old=sealFrame.querySelector('.autopulse'); if(old) old.remove();
+  const d=document.createElement('div'); d.className='autopulse'; sealFrame.appendChild(d);
+  setTimeout(()=>d.remove(),400);
+  const r=sealFrame.getBoundingClientRect();
+  spawnParticle(r.left+r.width/2+(Math.random()-0.5)*50, r.top+r.height/2+(Math.random()-0.5)*30);
+}
+
+// ── shop tabs ─────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabUpgrades').classList.toggle('active', tab==='upgrades');
+  document.getElementById('tabSeals').classList.toggle('active', tab==='seals');
+  document.getElementById('tabGame').classList.toggle('active', tab==='game');
+  if (tab !== 'game') stopMinigame();
+  renderShop();
+}
+
+// ── shop render ───────────────────────────────
+function renderShop() {
+  const list=document.getElementById('shopList');
+  list.innerHTML='';
+
+  if (currentTab==='upgrades') {
+    for (const item of upgradeItems) {
+      const cost=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned));
+      const can=fish>=cost;
+      const div=document.createElement('div');
+      div.className='shop-item'+(can?' can-afford':'');
+      div.innerHTML=`
+        <div class="item-top">
+          <span class="item-name">${item.icon} ${item.name}</span>
+          <span class="item-owned">${item.owned}</span>
+        </div>
+        <div class="item-desc">${item.desc}</div>
+        <div class="item-cost"><span>🐟</span><span class="${can?'affordable':'too-expensive'}">${fmt(cost)}</span></div>`;
+      div.addEventListener('click',()=>{
+        const c=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned));
+        if(fish<c) return;
+        fish-=c; item.owned++;
+        if(!item.isAuto) recalcFpc();
+        if(item.isAuto) startAuto(item);
+        div.classList.add('buying'); setTimeout(()=>div.classList.remove('buying'),250);
+        spawnSplash(item.icon+' bought!');
+        updateUI();
+      });
+      list.appendChild(div);
+    }
+  } else if (currentTab === 'game') {
+    renderMinigame();
+  } else {
+    for (const ss of specialSeals) {
+      const cost=Math.floor(ss.cost*Math.pow(ss.costMult,ss.owned));
+      const can=fish>=cost;
+      const isOwned=ss.owned>0;
+      const div=document.createElement('div');
+      div.className='shop-item rare-item'+(can&&!isOwned?' can-afford':'')+(isOwned?' owned-seal':'');
+      div.innerHTML=`
+        <img class="seal-thumb" src="${ss.url}" alt="${ss.name}" />
+        <div class="item-top">
+          <span class="item-name rare-name">✨ ${ss.name}</span>
+          <span class="item-owned rare-owned">${ss.owned}</span>
+        </div>
+        <div class="item-desc">${isOwned ? 'Active in the pool!' : 'Unlock this special seal'}</div>
+        <div class="rare-chance">${ss.rarity} · +${ss.fishBonus} 🐟 on visit</div>
+        ${isOwned
+          ? `<div class="item-cost" style="color:rgba(78,203,113,0.7)">✅ Unlocked</div>`
+          : `<div class="item-cost"><span>🐟</span><span class="${can?'affordable':'too-expensive'}">${fmt(cost)}</span></div>`
+        }`;
+      if (!isOwned) {
+        div.addEventListener('click',()=>{
+          const c=Math.floor(ss.cost*Math.pow(ss.costMult,ss.owned));
+          if(fish<c) return;
+          fish-=c; ss.owned++;
+          div.classList.add('buying'); setTimeout(()=>div.classList.remove('buying'),250);
+          spawnSplash('✨ '+ss.name+' unlocked!', true);
+          updateUI();
+        });
+      }
+      list.appendChild(div);
+    }
+  }
+}
+
+function spawnSplash(text, isRare=false) {
+  const w=document.createElement('div');
+  w.className='splash'+(isRare?' rare-splash':'');
+  w.textContent=text;
+  w.style.left=(20+Math.random()*25)+'vw';
+  w.style.top=(45+Math.random()*25)+'vh';
+  document.body.appendChild(w);
+  setTimeout(()=>w.remove(),1100);
+}
+
+// ── settings ──────────────────────────────────
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+// ── click sound settings ───────────────────────
+let soundEnabled = true;
+let soundVolume = 60;
+
+function toggleSound(val) { soundEnabled = val; }
+function setSoundVol(v) { soundVolume = parseInt(v); document.getElementById('soundVolVal').textContent = v; }
+
+// Placeholder — swap this AudioBuffer for your real sound file later
+function playClickSound() {
+  if (!soundEnabled) return;
+  // TODO: replace with real audio file
+  // e.g: const audio = new Audio('click.mp3'); audio.volume = soundVolume/100; audio.play();
+}
+// ── minigame ───────────────────────────────────
+let mgRunning = false, mgTimeLeft = 0, mgCaught = 0;
+let mgInterval = null, mgFishInterval = null, mgSealInterval = null;
+const MG_DURATION = 15;
+
+function renderMinigame() {
+  const list = document.getElementById('shopList');
+  list.innerHTML = `
+    <div id="minigame">
+      <div id="mgTitle">🐟 Catch the Fish!</div>
+      <div id="mgDesc">Click the fish before they escape!<br>Each catch earns real 🐟 fish.</div>
+      <div id="mgRow">
+        <span id="mgTimer">⏱ ${MG_DURATION}s</span>
+        <span id="mgScore">🐟 0</span>
+      </div>
+      <div id="mgBoard"></div>
+      <button id="mgStartBtn" onclick="startMinigame()">▶ Start</button>
+      <div id="mgResult"></div>
+    </div>`;
+}
+
+function startMinigame() {
+  if (mgRunning) return;
+  mgRunning = true; mgTimeLeft = MG_DURATION; mgCaught = 0;
+  document.getElementById('mgStartBtn').textContent = '⏳ Running...';
+  document.getElementById('mgResult').textContent = '';
+  const board = document.getElementById('mgBoard');
+  board.innerHTML = '';
+  const sealEl = document.createElement('div');
+  sealEl.className = 'mg-seal'; sealEl.textContent = '🦭'; sealEl.id = 'mgSeal';
+  sealEl.style.left = '90px'; sealEl.style.top = '90px';
+  board.appendChild(sealEl);
+
+  mgInterval = setInterval(() => {
+    mgTimeLeft--;
+    const t = document.getElementById('mgTimer');
+    if (t) t.textContent = `⏱ ${mgTimeLeft}s`;
+    if (mgTimeLeft <= 0) stopMinigame();
+  }, 1000);
+
+  mgFishInterval = setInterval(() => spawnMgFish(), 700);
+
+  mgSealInterval = setInterval(() => {
+    const s = document.getElementById('mgSeal');
+    if (s) { s.style.left=(10+Math.random()*170)+'px'; s.style.top=(10+Math.random()*170)+'px'; }
+  }, 1200);
+}
+
+function spawnMgFish() {
+  const board = document.getElementById('mgBoard');
+  if (!board || !mgRunning) return;
+  const el = document.createElement('div');
+  el.className = 'mg-fish';
+  el.textContent = ['🐟','🐠','🐡'][Math.floor(Math.random()*3)];
+  el.style.left = (8 + Math.random()*180) + 'px';
+  el.style.top  = (8 + Math.random()*180) + 'px';
+  el.addEventListener('click', () => {
+    if (!mgRunning || el.classList.contains('caught')) return;
+    el.classList.add('caught');
+    mgCaught++;
+    const earned = Math.max(1, Math.floor(fishPerClick * 0.5));
+    fish += earned; totalFish += earned;
+    const s = document.getElementById('mgScore');
+    if (s) s.textContent = `🐟 ${mgCaught}`;
+    spawnParticle(
+      el.getBoundingClientRect().left,
+      el.getBoundingClientRect().top,
+      false
+    );
+    updateUI();
+    setTimeout(() => el.remove(), 300);
+  });
+  board.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 2500);
+}
+
+function stopMinigame() {
+  if (!mgRunning && mgTimeLeft !== 0) return;
+  mgRunning = false;
+  clearInterval(mgInterval); clearInterval(mgFishInterval); clearInterval(mgSealInterval);
+  const board = document.getElementById('mgBoard');
+  if (board) board.innerHTML = '';
+  const btn = document.getElementById('mgStartBtn');
+  if (btn) btn.textContent = '▶ Play Again';
+  const result = document.getElementById('mgResult');
+  if (result && mgCaught > 0) result.textContent = `Caught ${mgCaught} fish! 🎉`;
+}
+
+(function() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+
+  function resize() { canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // colour stops for deep ocean gradient
+  const bubbles = [];
+  const BUBBLE_COUNT = 55;
+
+  function randBubble() {
+    return {
+      x: Math.random() * canvas.width,
+      y: canvas.height + Math.random() * 200,
+      r: 2 + Math.random() * 14,
+      speed: 0.4 + Math.random() * 1.2,
+      drift: (Math.random() - 0.5) * 0.4,
+      opacity: 0.06 + Math.random() * 0.18,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.01 + Math.random() * 0.02,
+    };
+  }
+  for (let i = 0; i < BUBBLE_COUNT; i++) {
+    const b = randBubble();
+    b.y = Math.random() * canvas.height; // spread on start
+    bubbles.push(b);
+  }
+
+  // light rays array
+  const rays = Array.from({length:6}, (_,i) => ({
+    x: (canvas.width / 6) * i + Math.random() * 120,
+    width: 30 + Math.random() * 60,
+    opacity: 0.02 + Math.random() * 0.04,
+    speed: 0.003 + Math.random() * 0.004,
+    phase: Math.random() * Math.PI * 2,
+  }));
+
+  function draw() {
+    const W = canvas.width, H = canvas.height;
+
+    // deep ocean gradient background
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0,   '#051525');
+    grad.addColorStop(0.3, '#072035');
+    grad.addColorStop(0.7, '#0a2a4a');
+    grad.addColorStop(1,   '#0d3560');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // subtle light rays from top
+    rays.forEach(ray => {
+      ray.phase += ray.speed;
+      const alpha = ray.opacity * (0.6 + 0.4 * Math.sin(ray.phase));
+      const rg = ctx.createLinearGradient(ray.x, 0, ray.x + ray.width * 0.3, H * 0.75);
+      rg.addColorStop(0,   `rgba(100,180,255,${alpha})`);
+      rg.addColorStop(1,   `rgba(100,180,255,0)`);
+      ctx.beginPath();
+      ctx.moveTo(ray.x, 0);
+      ctx.lineTo(ray.x + ray.width, 0);
+      ctx.lineTo(ray.x + ray.width * 0.5 + 40, H * 0.75);
+      ctx.lineTo(ray.x - 20, H * 0.75);
+      ctx.closePath();
+      ctx.fillStyle = rg;
+      ctx.fill();
+    });
+
+    // bubbles
+    bubbles.forEach(b => {
+      b.y -= b.speed;
+      b.wobble += b.wobbleSpeed;
+      b.x += b.drift + Math.sin(b.wobble) * 0.4;
+
+      if (b.y + b.r < 0) {
+        Object.assign(b, randBubble());
+        b.x = Math.random() * W;
+      }
+
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(150,210,255,${b.opacity})`;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // small shine dot inside
+      ctx.beginPath();
+      ctx.arc(b.x - b.r*0.3, b.y - b.r*0.3, b.r*0.25, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(220,240,255,${b.opacity * 0.8})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ── boot ──────────────────────────────────────
+loadGame();
+updateUI();
+</script>
+</body>
+</html>
