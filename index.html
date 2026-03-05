@@ -13,6 +13,7 @@
   --coral:#ff6b6b; --sand:#f9e4b7; --gold:#ffd700;
   --green:#4ecb71; --shop-bg:#071e33;
   --rare:#c084fc; --rare-glow:#a855f7;
+  --rebirth:#f97316; --rebirth-glow:#ea580c;
 }
 html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); font-family:'Nunito',sans-serif; cursor:none; user-select:none; }
 
@@ -94,7 +95,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 
 
 
-#shop { width:280px; flex-shrink:0; background:var(--shop-bg); border-left:2px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; overflow:hidden; }
+#shop { width:280px; flex-shrink:0; background:var(--shop-bg); border-left:2px solid rgba(255,255,255,0.07); display:flex; flex-direction:column; overflow:hidden; min-height:0; }
 
 #shopkeeper {
   flex-shrink:0;
@@ -133,13 +134,18 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
   border:6px solid transparent; border-bottom-color:rgba(255,255,255,0.08);
 }
 
-.tab-row { display:flex; gap:0; background:rgba(0,0,0,0.2); border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0; }
-.tab { flex:1; font-family:'Boogaloo',cursive; font-size:0.82rem; padding:7px 0; text-align:center; color:rgba(232,244,253,0.35); border-bottom:2px solid transparent; cursor:none; transition:color 0.2s, border-color 0.2s, background 0.2s; }
+.tab-row-wrap { position:relative; flex-shrink:0; }
+.tab-row-wrap::before, .tab-row-wrap::after { content:''; position:absolute; top:0; bottom:0; width:24px; pointer-events:none; z-index:2; }
+.tab-row-wrap::before { left:0; background:linear-gradient(to right, var(--shop-bg), transparent); }
+.tab-row-wrap::after { right:0; background:linear-gradient(to left, var(--shop-bg), transparent); }
+
+.tab-row::-webkit-scrollbar { display:none; }
+.tab { flex:0 0 auto; font-family:'Boogaloo',cursive; font-size:0.82rem; padding:7px 10px; text-align:center; color:rgba(232,244,253,0.35); border-bottom:2px solid transparent; cursor:none; transition:color 0.2s, border-color 0.2s, background 0.2s; white-space:nowrap; }
 .tab.active { color:var(--foam); border-color:var(--gold); background:rgba(255,215,0,0.05); }
 .tab:hover { color:rgba(232,244,253,0.8); }
 .tab.rare-tab.active { color:var(--rare); border-color:var(--rare); background:rgba(168,85,247,0.05); }
 
-#shopList { flex:1; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:6px; }
+#shopList { flex:1; overflow-y:scroll; padding:8px; display:flex; flex-direction:column; gap:6px; min-height:0; }
 #shopList::-webkit-scrollbar{width:3px;}
 #shopList::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:4px;}
 
@@ -168,7 +174,17 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 #statsBar { padding:9px 12px; border-top:1px solid rgba(255,255,255,0.07); font-size:0.68rem; color:rgba(232,244,253,0.3); font-weight:600; line-height:1.8; display:flex; flex-direction:column; gap:0; }
 .save-row { display:flex; align-items:center; justify-content:space-between; margin-top:4px; }
 #saveBtn { font-family:'Boogaloo',cursive; font-size:0.8rem; background:rgba(78,203,113,0.18); border:1.5px solid rgba(78,203,113,0.4); color:var(--green); border-radius:10px; padding:2px 10px; cursor:none; transition:background 0.2s; }
-#saveBtn:hover { background:rgba(78,203,113,0.35); }
+#statsBarBtn { font-family:'Boogaloo',cursive; font-size:0.8rem; background:rgba(56,182,255,0.15); border:1.5px solid rgba(56,182,255,0.4); color:#60c4ff; border-radius:10px; padding:2px 10px; cursor:none; transition:background 0.2s; }
+#statsBarBtn:hover { background:rgba(56,182,255,0.3); }
+#rebirthBarBtn { font-family:'Boogaloo',cursive; font-size:0.8rem; background:rgba(249,115,22,0.15); border:1.5px solid rgba(249,115,22,0.4); color:var(--rebirth); border-radius:10px; padding:2px 10px; cursor:none; transition:background 0.2s; }
+#rebirthBarBtn:hover { background:rgba(249,115,22,0.3); }
+#shopCloseBtn { background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.12); color:rgba(232,244,253,0.35); font-size:0.8rem; cursor:none; transition:all 0.2s; padding:2px 7px; border-radius:7px; line-height:1; }
+#shopCloseBtn:hover { color:var(--foam); background:rgba(255,255,255,0.14); }
+#shopOpenBtn { position:fixed; right:0; top:50%; transform:translateY(-50%); z-index:50; background:rgba(7,30,51,0.95); border:2px solid rgba(255,255,255,0.1); border-right:none; border-radius:10px 0 0 10px; color:var(--foam); font-family:'Boogaloo',cursive; font-size:0.85rem; padding:14px 6px; cursor:none; writing-mode:vertical-rl; letter-spacing:1px; transition:background 0.2s; display:none; }
+#shopOpenBtn:hover { background:rgba(255,215,0,0.12); color:var(--gold); }
+#shop { transition:width 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.25s; }
+#shop.hidden { width:0 !important; opacity:0; pointer-events:none; overflow:hidden; }
+
 #saveInfo { font-size:0.62rem; color:rgba(78,203,113,0.45); }
 
 .splash{position:fixed;font-family:'Boogaloo',cursive;font-size:1.8rem;color:var(--sand);text-shadow:0 2px 10px rgba(0,0,0,0.5);pointer-events:none;z-index:300;animation:splashAnim 1s ease-out forwards;}
@@ -177,9 +193,41 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 .autopulse{position:absolute;inset:0;border-radius:13px;border:3px solid rgba(78,203,113,0.55);pointer-events:none;z-index:7;animation:autoPing 0.4s ease-out forwards;}
 @keyframes autoPing{0%{opacity:0.9;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
 
+#bizarreBtn { font-size:1.1rem; background:rgba(168,85,247,0.12); border:1.5px solid rgba(168,85,247,0.35); color:#c084fc; border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; }
+#bizarreBtn:hover { background:rgba(168,85,247,0.25); }
+#luckOverdriveBanner { position:fixed; top:60px; left:50%; transform:translateX(-50%); z-index:600; background:linear-gradient(135deg,rgba(255,215,0,0.95),rgba(255,165,0,0.95)); border-radius:30px; padding:8px 24px; font-family:'Boogaloo',cursive; font-size:1.1rem; color:#071e33; box-shadow:0 0 30px rgba(255,215,0,0.6); opacity:0; transition:opacity 0.4s; pointer-events:none; white-space:nowrap; }
+#achievBtn { font-size:1.1rem; background:transparent; border:none; color:var(--foam); border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; position:relative; }
+#achievBtn:hover { background:rgba(255,255,255,0.1); }
+#achievBadge { position:absolute; top:-5px; right:-5px; background:#ff6b6b; color:#fff; font-family:'Boogaloo',cursive; font-size:0.6rem; border-radius:10px; padding:1px 5px; display:none; }
 #settingsBtn { font-size:1.1rem; background:rgba(255,255,255,0.08); border:1.5px solid rgba(255,255,255,0.15); color:var(--foam); border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; }
 #settingsBtn:hover { background:rgba(255,255,255,0.18); }
 
+#statsPanel {
+  position:fixed; top:52px; right:0; bottom:0; width:300px; z-index:300;
+  background:rgba(5,18,32,0.97); border-left:2px solid rgba(255,255,255,0.08);
+  display:flex; flex-direction:column; backdrop-filter:blur(10px);
+  transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+#statsPanel.open { transform:translateX(0); }
+#statsHeader { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.07); font-family:'Boogaloo',cursive; font-size:1.2rem; color:var(--foam); }
+#statsClose { background:none; border:none; color:rgba(232,244,253,0.4); font-size:1.1rem; cursor:none; transition:color 0.2s; }
+#statsClose:hover { color:var(--foam); }
+#statsBody { flex:1; overflow-y:auto; padding:10px 10px 16px; display:flex; flex-direction:column; gap:6px; }
+#statsBody::-webkit-scrollbar{width:3px;}
+#statsBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
+#achievPanel {
+  position:fixed; top:52px; right:0; bottom:0; width:300px; z-index:300;
+  background:rgba(5,18,32,0.97); border-left:2px solid rgba(255,255,255,0.08);
+  display:flex; flex-direction:column; backdrop-filter:blur(10px);
+  transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+#achievPanel.open { transform:translateX(0); }
+#achievHeader { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.07); font-family:'Boogaloo',cursive; font-size:1.2rem; color:var(--foam); }
+#achievClose { background:none; border:none; color:rgba(232,244,253,0.4); font-size:1.1rem; cursor:none; transition:color 0.2s; }
+#achievClose:hover { color:var(--foam); }
+#achievBody { flex:1; overflow-y:auto; padding:10px 10px 16px; display:flex; flex-direction:column; gap:6px; }
+#achievBody::-webkit-scrollbar{width:3px;}
+#achievBody::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px;}
 #settingsPanel {
   position:fixed; top:52px; right:0; bottom:0; width:300px; z-index:300;
   background:rgba(5,18,32,0.97); border-left:2px solid rgba(255,255,255,0.08);
@@ -256,6 +304,69 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
   0%  { transform:translateY(0) scale(1) rotate(0deg); opacity:1; }
   100%{ transform:translateY(-220px) scale(0.3) rotate(720deg); opacity:0; }
 }
+.achiev-item { background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.08); border-radius:11px; padding:10px 12px; display:flex; flex-direction:column; gap:4px; }
+.achiev-item.unlocked { border-color:rgba(255,215,0,0.4); background:rgba(255,215,0,0.05); }
+.achiev-item.claimed  { border-color:rgba(78,203,113,0.3); background:rgba(78,203,113,0.04); }
+.achiev-top { display:flex; align-items:center; justify-content:space-between; }
+.achiev-name { font-family:'Boogaloo',cursive; font-size:0.92rem; color:rgba(232,244,253,0.45); }
+.achiev-item.unlocked .achiev-name, .achiev-item.claimed .achiev-name { color:var(--foam); }
+.achiev-desc { font-size:0.67rem; color:rgba(232,244,253,0.3); font-weight:600; }
+.achiev-reward { font-size:0.67rem; color:var(--gold); font-weight:700; }
+.achiev-bar-wrap { height:5px; background:rgba(255,255,255,0.07); border-radius:5px; overflow:hidden; margin-top:2px; }
+.achiev-bar { height:100%; background:linear-gradient(90deg,#38b6ff,#c084fc); border-radius:5px; transition:width 0.4s; }
+.achiev-claim-btn { font-family:'Boogaloo',cursive; font-size:0.82rem; padding:5px 10px; border-radius:8px; border:1.5px solid rgba(255,215,0,0.5); background:rgba(255,215,0,0.12); color:var(--gold); cursor:none; margin-top:3px; transition:background 0.2s; }
+.achiev-claim-btn:hover { background:rgba(255,215,0,0.28); }
+.achiev-section-label { font-family:'Boogaloo',cursive; font-size:0.7rem; color:rgba(232,244,253,0.28); letter-spacing:1.2px; text-transform:uppercase; padding:6px 2px 2px; }
+/* ── STORY ── */
+#storyCutscene { position:fixed; inset:0; z-index:800; background:rgba(0,0,0,0.88); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.5s; }
+#storyCutscene.show { opacity:1; pointer-events:all; }
+#storyBox { background:linear-gradient(160deg,rgba(5,18,38,0.98),rgba(10,30,60,0.98)); border:2px solid rgba(255,215,0,0.3); border-radius:20px; max-width:420px; width:90%; padding:30px 28px; display:flex; flex-direction:column; gap:16px; box-shadow:0 0 60px rgba(255,215,0,0.15); }
+#storyChapterLabel { font-family:'Boogaloo',cursive; font-size:0.72rem; color:rgba(255,215,0,0.5); letter-spacing:2px; text-transform:uppercase; }
+#storyTitle { font-family:'Boogaloo',cursive; font-size:1.8rem; color:var(--gold); line-height:1.2; text-shadow:0 0 20px rgba(255,215,0,0.4); }
+#storyText { font-size:0.85rem; color:rgba(232,244,253,0.75); font-weight:600; line-height:1.8; }
+#storyAuthor { font-size:0.7rem; color:rgba(255,215,0,0.4); font-weight:700; font-style:italic; }
+#storyDismiss { font-family:'Boogaloo',cursive; font-size:1rem; padding:10px; border-radius:12px; border:2px solid rgba(255,215,0,0.4); background:rgba(255,215,0,0.1); color:var(--gold); cursor:none; transition:background 0.2s; align-self:flex-end; }
+#storyDismiss:hover { background:rgba(255,215,0,0.25); }
+#storyPanel { position:fixed; top:52px; right:0; bottom:0; width:320px; z-index:300; background:rgba(5,18,32,0.97); border-left:2px solid rgba(255,215,0,0.15); display:flex; flex-direction:column; backdrop-filter:blur(10px); transform:translateX(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+#storyPanel.open { transform:translateX(0); }
+#storyPanelHeader { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.07); font-family:'Boogaloo',cursive; font-size:1.2rem; color:var(--gold); }
+#storyPanelClose { background:none; border:none; color:rgba(232,244,253,0.4); font-size:1.1rem; cursor:none; transition:color 0.2s; }
+#storyPanelClose:hover { color:var(--foam); }
+#storyPanelBody { flex:1; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+#storyPanelBody::-webkit-scrollbar{width:3px;}
+#storyPanelBody::-webkit-scrollbar-thumb{background:rgba(255,215,0,0.15);border-radius:4px;}
+.story-entry { border-left:3px solid rgba(255,215,0,0.3); padding:8px 12px; display:flex; flex-direction:column; gap:4px; }
+.story-entry.locked { border-left-color:rgba(255,255,255,0.08); opacity:0.35; }
+.story-entry-chapter { font-size:0.62rem; color:rgba(255,215,0,0.45); font-weight:700; letter-spacing:1.5px; text-transform:uppercase; }
+.story-entry-title { font-family:'Boogaloo',cursive; font-size:1rem; color:var(--gold); }
+.story-entry.locked .story-entry-title { color:rgba(232,244,253,0.3); }
+.story-entry-text { font-size:0.72rem; color:rgba(232,244,253,0.55); font-weight:600; line-height:1.6; }
+#storyBtn { font-size:1.1rem; background:transparent; border:none; color:var(--gold); border-radius:10px; padding:4px 10px; cursor:none; transition:background 0.2s; position:relative; }
+#storyBtn:hover { background:rgba(255,215,0,0.1); }
+#storyBadge { position:absolute; top:-5px; right:-5px; background:#ffd700; color:#071e33; font-family:'Boogaloo',cursive; font-size:0.6rem; border-radius:10px; padding:1px 5px; display:none; }
+.tab.rebirth-tab { color:rgba(249,115,22,0.5); }
+.tab.rebirth-tab.active { color:var(--rebirth); border-color:var(--rebirth); background:rgba(249,115,22,0.05); }
+.rebirth-coin { display:inline-block; background:linear-gradient(135deg,#f97316,#ea580c); border-radius:50%; width:14px; height:14px; font-size:0.55rem; line-height:14px; text-align:center; margin-right:2px; }
+.rc-item { background:rgba(249,115,22,0.06); border:1.5px solid rgba(249,115,22,0.2); border-radius:11px; padding:10px 12px; display:flex; flex-direction:column; gap:3px; cursor:none; transition:background 0.15s, border-color 0.15s; }
+.rc-item:hover { background:rgba(249,115,22,0.12); border-color:rgba(249,115,22,0.45); }
+.rc-item.rc-affordable { border-color:rgba(249,115,22,0.6); }
+.rc-item.rc-maxed { border-color:rgba(78,203,113,0.4); background:rgba(78,203,113,0.04); opacity:0.7; cursor:default; }
+.rc-item.buying { animation:buyPop 0.22s cubic-bezier(0.34,1.56,0.64,1); }
+.rc-name { font-family:'Boogaloo',cursive; font-size:0.95rem; color:var(--rebirth); }
+.rc-desc { font-size:0.68rem; color:rgba(232,244,253,0.38); font-weight:600; }
+.rc-cost { font-family:'Boogaloo',cursive; font-size:0.88rem; display:flex; align-items:center; gap:3px; margin-top:1px; }
+.rc-owned { font-family:'Boogaloo',cursive; font-size:0.85rem; color:var(--rebirth); background:rgba(249,115,22,0.1); border-radius:6px; padding:1px 7px; }
+#rebirthConfirm { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; display:none; }
+#rebirthConfirm.show { display:flex; }
+#rebirthModal { background:linear-gradient(135deg,rgba(20,8,0,0.98),rgba(10,20,40,0.98)); border:2px solid var(--rebirth); border-radius:20px; padding:28px 24px; max-width:300px; width:90%; display:flex; flex-direction:column; gap:14px; box-shadow:0 0 40px rgba(249,115,22,0.4); }
+.rm-title { font-family:'Boogaloo',cursive; font-size:1.6rem; color:var(--rebirth); text-align:center; text-shadow:0 0 20px rgba(249,115,22,0.6); }
+.rm-body { font-size:0.78rem; color:rgba(232,244,253,0.6); font-weight:600; line-height:1.7; text-align:center; }
+.rm-coins { font-family:'Boogaloo',cursive; font-size:1.3rem; color:var(--rebirth); text-align:center; }
+.rm-buttons { display:flex; gap:10px; }
+.rm-confirm { flex:1; font-family:'Boogaloo',cursive; font-size:1rem; padding:9px; border-radius:12px; border:2px solid var(--rebirth); background:rgba(249,115,22,0.2); color:var(--rebirth); cursor:none; transition:background 0.2s; }
+.rm-confirm:hover { background:rgba(249,115,22,0.4); }
+.rm-cancel { flex:1; font-family:'Boogaloo',cursive; font-size:1rem; padding:9px; border-radius:12px; border:2px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); color:rgba(232,244,253,0.5); cursor:none; transition:background 0.2s; }
+.rm-cancel:hover { background:rgba(255,255,255,0.12); }
 </style>
 </head>
 <body>
@@ -275,6 +386,56 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
       <div id="rareFish">+100 🐟</div>
     </div>
     <button id="rareClose" onclick="closeRarePopup()"></button>
+  </div>
+</div>
+
+<div id="luckOverdriveBanner">⚡ LUCK OVERDRIVE! Seal chances +5%! 🍀</div>
+
+<div id="storyCutscene">
+  <div id="storyBox">
+    <div id="storyChapterLabel">Chapter I</div>
+    <div id="storyTitle">The First Fish</div>
+    <div id="storyText">A seal stood alone at the edge of the ocean...</div>
+    <div id="storyAuthor">— The Seal Chronicle</div>
+    <button id="storyDismiss" onclick="dismissStoryCutscene()">Continue →</button>
+  </div>
+</div>
+
+<div id="storyPanel">
+  <div id="storyPanelHeader">
+    <span>📖 The Seal Chronicle</span>
+    <button id="storyPanelClose" onclick="toggleStory()">✕</button>
+  </div>
+  <div id="storyPanelBody"></div>
+</div>
+
+<div id="statsPanel">
+  <div id="statsHeader">
+    <span>📊 Stats</span>
+    <button id="statsClose" onclick="toggleStats()">✕</button>
+  </div>
+  <div id="statsBody"></div>
+</div>
+
+<div id="achievPanel">
+  <div id="achievHeader">
+    <span>🏅 Achievements</span>
+    <button id="achievClose" onclick="toggleAchiev()">✕</button>
+  </div>
+  <div id="achievBody"></div>
+</div>
+
+<button id="shopOpenBtn" onclick="toggleShop()">🛒 Shop</button>
+
+<div id="rebirthConfirm">
+  <div id="rebirthModal">
+    <div class="rm-title">🔄 Rebirth?</div>
+    <div class="rm-body">You will lose all <b style="color:#e8f4fd;">fish</b> and <b style="color:#e8f4fd;">upgrades</b>.<br>Special seals, achievements &amp; rebirth upgrades are kept.</div>
+    <div class="rm-coins" id="rmCoinsPreview">You'll receive: 0 🔥</div>
+    <div class="rm-buttons">
+      <button class="rm-cancel" onclick="closeRebirthModal()">✕ Cancel</button>
+      <button class="rm-confirm" onclick="doRebirth()">🔄 Rebirth!</button>
+    </div>
   </div>
 </div>
 
@@ -321,6 +482,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
         <span id="musicVolVal">40</span>
       </div>
     </div>
+    <div class="settings-section">
+      <div class="settings-label">🎟️ Redeem Code</div>
+      <div style="display:flex;gap:6px;">
+        <input id="codeInput" type="text" placeholder="Enter code..." style="flex:1;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.12);border-radius:10px;padding:7px 10px;color:var(--foam);font-family:'Nunito',sans-serif;font-size:0.82rem;outline:none;" />
+        <button onclick="redeemCode()" style="font-family:'Boogaloo',cursive;font-size:0.85rem;background:rgba(255,215,0,0.15);border:1.5px solid rgba(255,215,0,0.4);color:var(--gold);border-radius:10px;padding:6px 12px;cursor:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,215,0,0.28)'" onmouseout="this.style.background='rgba(255,215,0,0.15)'">✓ Redeem</button>
+      </div>
+      <div id="codeMsg" style="font-size:0.7rem;font-weight:700;min-height:16px;margin-top:2px;"></div>
+    </div>
   </div>
 </div>
 
@@ -328,11 +497,19 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
   <h1>🦭 Seal Clicker</h1>
   <div class="topright">
     <div id="perSec"><span>🐟</span><span id="perSecVal">0</span><span class="label">/sec</span></div>
+    <div id="bizarreWallet" style="display:none;align-items:center;gap:6px;background:rgba(168,85,247,0.12);border:2px solid rgba(168,85,247,0.35);border-radius:30px;padding:4px 12px;">
+      <img src="https://i.pinimg.com/736x/0e/ba/0e/0eba0ee841d71fb0e4a76bd803f76455.jpg" style="width:20px;height:20px;border-radius:50%;object-fit:cover;" />
+      <span id="bizarreCoinCount" style="font-family:'Boogaloo',cursive;font-size:1.1rem;color:#c084fc;">0</span>
+      <span style="font-size:0.7rem;color:rgba(192,132,252,0.55);font-weight:700;text-transform:uppercase;letter-spacing:1px;">bizarre</span>
+    </div>
     <div id="wallet">
       <span class="coin">🐟</span>
       <span id="fishCount">0</span>
       <span class="label">fish</span>
     </div>
+    <button id="storyBtn" onclick="toggleStory()">📖<span id="storyBadge"></span></button>
+    <button id="achievBtn" onclick="toggleAchiev()">🏅<span id="achievBadge"></span></button>
+    <button id="bizarreBtn" onclick="toggleShop();switchTab('bizarre')" style="display:none;">🌀</button>
     <button id="settingsBtn" onclick="toggleSettings()">⚙️</button>
   </div>
 </div>
@@ -360,23 +537,29 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
   <div id="shop">
     <div id="shopkeeper">
       <img id="shopkeeperImg" src="https://i.pinimg.com/736x/eb/95/a8/eb95a876b71a18ccd0341b758d757a3f.jpg" alt="shopkeeper seal" />
-      <div id="shopkeeperName">🦭 Wally's Shop</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <div id="shopkeeperName">🦭 Wally's Shop</div>
+        <button id="shopCloseBtn" onclick="toggleShop()" title="Close shop">❌</button>
+      </div>
       <div id="shopkeeperSpeech">Welcome! What can I get ya? 🐟</div>
     </div>
-    <div class="tab-row">
+    <div class="tab-row-wrap">
+    <div class="tab-row" id="tabRow">
       <div class="tab active" id="tabUpgrades" onclick="switchTab('upgrades')">⚙️ Upgrades</div>
       <div class="tab rare-tab" id="tabSeals" onclick="switchTab('seals')">✨ Seals</div>
       <div class="tab" id="tabGame" onclick="switchTab('game')">🎮 Game</div>
       <div class="tab" id="tabEvents" onclick="switchTab('events')">🎪 Events</div>
     </div>
+    </div>
     <div id="shopList"></div>
     <div id="statsBar">
-      <div>Total clicks: <span id="statClicks">0</span> &nbsp;|&nbsp; Seals seen: <span id="statSeals">0</span></div>
-      <div>Fish earned: <span id="statTotal">0</span> &nbsp;|&nbsp; /click: <span id="statFpc">1</span></div>
-      <div>Niko visits: <span id="statNiko">0</span> 😴</div>
       <div class="save-row">
         <span id="saveInfo">No save yet</span>
-        <button id="saveBtn" onclick="saveGame()">💾 Save</button>
+        <div style="display:flex;gap:5px;">
+          <button id="statsBarBtn" onclick="toggleStats()">📊 Stats</button>
+          <button id="rebirthBarBtn" onclick="switchTab('rebirth')">🔄 Rebirth</button>
+          <button id="saveBtn" onclick="saveGame()">💾 Save</button>
+        </div>
       </div>
     </div>
   </div>
@@ -387,7 +570,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--ocean); 
 const cursor = document.getElementById('cursor');
 document.addEventListener('mousemove', e => { cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
 
-let fish=0, totalFish=0, totalClicks=0, sealsShown=0, nikoVisits=0;
+let fish=0, totalFish=0, totalClicks=0, sealsShown=0, nikoVisits=0, hootieVisits=0, luckyVisits=0, sorryVisits=0, bizarreVisits=0;
+let bizarreCoins=0;
 let fishPerClick=1;
 let currentTab = 'upgrades';
 let lastSealWasRare = false;
@@ -409,9 +593,6 @@ const normalSeals = [
   "https://i.pinimg.com/736x/95/f2/bc/95f2bc80ec41eec358119fd0969261a0.jpg",
   "https://i.pinimg.com/736x/28/70/f3/2870f3e05950cc0df54922a61c37382c.jpg",
   "https://i.pinimg.com/736x/05/39/91/0539913a2360749fba7ea2c6592b5a31.jpg",
-   "https://i.pinimg.com/1200x/ca/e2/9d/cae29de164f449e620abc6da8949a0e2.jpg",
- "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJySOTfe31-AF6Fx6HaYgGakvGDS0roBRKXw&s",
-   "https://i.pinimg.com/736x/f0/24/ff/f024ffec2432dfe8c82a0922ca6593c5.jpg",
 ];
 
 const specialSeals = [
@@ -443,7 +624,286 @@ const specialSeals = [
     messages: ['"i\'m so sorry... here\'s a fish 🐟"','"please forgive me 🥺🐟"','"i didn\'t mean it... 🐟"','"sorrysorrysorry 🥺"','"this fish is an apology 🐟"','"i\'m sorry okay 🥺🐟"'],
     cost: 560, costMult: 3, owned: 0, rarity: '1/100 chance',
   },
+  {
+    id: 'bizarre', name: 'Bizarre Seal', icon: '🌀',
+    url: "https://i.pinimg.com/1200x/e6/3b/9c/e63b9c01dbbca6dd2008375e83e4f41c.jpg",
+    chance: 1/1000, fishBonus: 0, bizarreBonus: 1,
+    messages: ['"ORA ORA ORA!! 🌀"','"MUDA MUDA MUDA!! 🌀"','"ZA WARUDO... 🕐"','"you cannot escape the bizarre 🌀"','"wryyyyy!! 🌀✨"'],
+    cost: 0, costMult: 1, owned: 0, rarity: '1/1,000 chance', hidden: true,
+  },
 ];
+
+// ── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+const ACHIEVEMENTS = [
+  // Fish earned milestones
+  { id:'fish_500',     icon:'🐟', name:'First Haul',        desc:'Earn 500 fish total',              reward:200,     check:()=>totalFish>=500,          prog:()=>Math.min(totalFish,500)/500 },
+  { id:'fish_5k',      icon:'🪣', name:'Fish Hoarder',       desc:'Earn 5,000 fish total',            reward:1000,    check:()=>totalFish>=5000,         prog:()=>Math.min(totalFish,5000)/5000 },
+  { id:'fish_25k',     icon:'🌊', name:'Tide Rider',         desc:'Earn 25,000 fish total',           reward:5000,    check:()=>totalFish>=25000,        prog:()=>Math.min(totalFish,25000)/25000 },
+  { id:'fish_100k',    icon:'💰', name:'Ocean Lord',         desc:'Earn 100,000 fish total',          reward:20000,   check:()=>totalFish>=100000,       prog:()=>Math.min(totalFish,100000)/100000 },
+  { id:'fish_500k',    icon:'💎', name:'Fish Millionaire',   desc:'Earn 500,000 fish total',          reward:100000,  check:()=>totalFish>=500000,       prog:()=>Math.min(totalFish,500000)/500000 },
+  { id:'fish_1m',      icon:'👑', name:'Fish God',           desc:'Earn 1,000,000 fish total',        reward:500000,  check:()=>totalFish>=1000000,      prog:()=>Math.min(totalFish,1000000)/1000000 },
+  { id:'fish_1b',      icon:'🌟', name:'Beyond The Ocean',   desc:'Earn 1,000,000,000 fish total',    reward:5000000, check:()=>totalFish>=1000000000,   prog:()=>Math.min(totalFish,1000000000)/1000000000 },
+  // Click milestones
+  { id:'clicks_50',    icon:'👆', name:'Just Getting Started', desc:'Click 50 times',                 reward:100,     check:()=>totalClicks>=50,         prog:()=>Math.min(totalClicks,50)/50 },
+  { id:'clicks_500',   icon:'🖱️', name:'Clicker',             desc:'Click 500 times',                reward:500,     check:()=>totalClicks>=500,        prog:()=>Math.min(totalClicks,500)/500 },
+  { id:'clicks_5k',    icon:'💪', name:'Seal Masher',         desc:'Click 5,000 times',              reward:3000,    check:()=>totalClicks>=5000,       prog:()=>Math.min(totalClicks,5000)/5000 },
+  { id:'clicks_50k',   icon:'🏅', name:'Dedicated Clicker',   desc:'Click 50,000 times',             reward:25000,   check:()=>totalClicks>=50000,      prog:()=>Math.min(totalClicks,50000)/50000 },
+  { id:'clicks_500k',  icon:'🔱', name:'Click Legend',        desc:'Click 500,000 times',            reward:200000,  check:()=>totalClicks>=500000,     prog:()=>Math.min(totalClicks,500000)/500000 },
+  // Seals seen
+  { id:'seals_10',     icon:'📸', name:'Seal Spotter',        desc:'See 10 seals',                   reward:300,     check:()=>sealsShown>=10,          prog:()=>Math.min(sealsShown,10)/10 },
+  { id:'seals_100',    icon:'🦭', name:'Seal Enthusiast',     desc:'See 100 seals',                  reward:2000,    check:()=>sealsShown>=100,         prog:()=>Math.min(sealsShown,100)/100 },
+  { id:'seals_1k',     icon:'🎞️', name:'Seal Collector',      desc:'See 1,000 seals',                reward:15000,   check:()=>sealsShown>=1000,        prog:()=>Math.min(sealsShown,1000)/1000 },
+  // Niko
+  { id:'niko_1',       icon:'😴', name:'Found Niko!',         desc:'See Sleepy Niko once',           reward:500,     check:()=>nikoVisits>=1,           prog:()=>Math.min(nikoVisits,1)/1 },
+  { id:'niko_10',      icon:'💙', name:"Niko's Best Friend",  desc:'See Sleepy Niko 10 times',       reward:5000,    check:()=>nikoVisits>=10,          prog:()=>Math.min(nikoVisits,10)/10 },
+  { id:'niko_50',      icon:'🌙', name:'Niko Fan Club',       desc:'See Sleepy Niko 50 times',       reward:50000,   check:()=>nikoVisits>=50,          prog:()=>Math.min(nikoVisits,50)/50 },
+  // Upgrades
+  { id:'upg_1',        icon:'🛒', name:'First Purchase',      desc:'Buy your first upgrade',         reward:100,     check:()=>upgradeItems.some(i=>i.owned>=1),                       prog:()=>upgradeItems.some(i=>i.owned>=1)?1:0 },
+  { id:'upg_5',        icon:'🔧', name:'Shopaholic',          desc:'Own 5 different upgrades',       reward:3000,    check:()=>upgradeItems.filter(i=>i.owned>=1).length>=5,           prog:()=>upgradeItems.filter(i=>i.owned>=1).length/5 },
+  { id:'upg_all',      icon:'⚡', name:'MAX POWER',           desc:'Own every upgrade at least once',reward:1000000, check:()=>upgradeItems.every(i=>i.owned>=1),                      prog:()=>upgradeItems.filter(i=>i.owned>=1).length/upgradeItems.length },
+  // Minigame
+  { id:'mg_1',         icon:'🎮', name:'First Catch',         desc:'Catch 1 fish in the minigame',   reward:200,     check:()=>mgTotalCaught>=1,        prog:()=>Math.min(mgTotalCaught,1)/1 },
+  { id:'mg_50',        icon:'🐠', name:'Mini Fisher',         desc:'Catch 50 fish in the minigame',  reward:2000,    check:()=>mgTotalCaught>=50,       prog:()=>Math.min(mgTotalCaught,50)/50 },
+  { id:'mg_250',       icon:'🐡', name:'Minigame Pro',        desc:'Catch 250 fish in the minigame', reward:15000,   check:()=>mgTotalCaught>=250,      prog:()=>Math.min(mgTotalCaught,250)/250 },
+  { id:'mg_1000',      icon:'🏆', name:'Minigame Legend',     desc:'Catch 1,000 fish in the minigame',reward:100000, check:()=>mgTotalCaught>=1000,     prog:()=>Math.min(mgTotalCaught,1000)/1000 },
+  // Special seals
+  { id:'seal_niko',    icon:'😴', name:'Niko Unlocked',       desc:'Unlock Sleepy Niko',             reward:500,     check:()=>specialSeals.find(s=>s.id==='niko')?.owned>=1,          prog:()=>specialSeals.find(s=>s.id==='niko')?.owned>=1?1:0 },
+  { id:'seal_hootie',  icon:'🦉', name:'Hootie Unlocked',     desc:'Unlock Hootie',                  reward:1000,    check:()=>specialSeals.find(s=>s.id==='hootie')?.owned>=1,        prog:()=>specialSeals.find(s=>s.id==='hootie')?.owned>=1?1:0 },
+  { id:'seal_lucky',   icon:'🍀', name:'Feeling Lucky',       desc:'Unlock Lucky Seal',              reward:1,       check:()=>specialSeals.find(s=>s.id==='lucky')?.owned>=1,         prog:()=>specialSeals.find(s=>s.id==='lucky')?.owned>=1?1:0 },
+  { id:'seal_all',     icon:'✨', name:'Seal Whisperer',      desc:'Unlock all special seals',       reward:250000,  check:()=>specialSeals.every(s=>s.owned>=1),                      prog:()=>specialSeals.filter(s=>s.owned>=1).length/specialSeals.length },
+  // Fish per click
+  { id:'fpc_10',       icon:'🎣', name:'Power Clicker',       desc:'Reach 10 fish per click',        reward:2000,    check:()=>fishPerClick>=10,        prog:()=>Math.min(fishPerClick,10)/10 },
+  { id:'fpc_100',      icon:'🔱', name:'Deep Sea Fisher',     desc:'Reach 100 fish per click',       reward:20000,   check:()=>fishPerClick>=100,       prog:()=>Math.min(fishPerClick,100)/100 },
+  { id:'fpc_500',      icon:'🌟', name:'Trident Wielder',     desc:'Reach 500 fish per click',           reward:150000,  check:()=>fishPerClick>=500,                                      prog:()=>Math.min(fishPerClick,500)/500 },
+  { id:'fpc_5000',     icon:'👁️', name:'Ocean Oracle',        desc:'Reach 5,000 fish per click',          reward:1000000, check:()=>fishPerClick>=5000,                                     prog:()=>Math.min(fishPerClick,5000)/5000 },
+  // Rebirth milestones
+  { id:'rebirth_1',    icon:'🔄', name:'Born Again',          desc:'Rebirth for the first time',           reward:500,     check:()=>rebirthCount>=1,                                        prog:()=>Math.min(rebirthCount,1)/1 },
+  { id:'rebirth_5',    icon:'🔥', name:'Serial Rebirther',    desc:'Rebirth 5 times',                      reward:10000,   check:()=>rebirthCount>=5,                                        prog:()=>Math.min(rebirthCount,5)/5 },
+  { id:'rebirth_10',   icon:'♾️', name:'Eternal Cycle',       desc:'Rebirth 10 times',                     reward:100000,  check:()=>rebirthCount>=10,                                       prog:()=>Math.min(rebirthCount,10)/10 },
+  // Rebirth coins
+  { id:'rc_10',        icon:'🔥', name:'Coin Collector',      desc:'Earn 10 Rebirth Coins total',          reward:5000,    check:()=>rebirthCoins>=10,                                       prog:()=>Math.min(rebirthCoins,10)/10 },
+  { id:'rc_50',        icon:'💎', name:'Coin Hoarder',        desc:'Have 50 Rebirth Coins at once',        reward:25000,   check:()=>rebirthCoins>=50,                                       prog:()=>Math.min(rebirthCoins,50)/50 },
+  // Bizarre
+  { id:'bizarre_1',    icon:'🌀', name:'Za Warudo',           desc:'See the Bizarre Seal once',            reward:5000,    check:()=>bizarreVisits>=1,                                       prog:()=>Math.min(bizarreVisits,1)/1 },
+  { id:'bizarre_10',   icon:'🌀', name:'Ora Ora Ora',         desc:'See the Bizarre Seal 10 times',        reward:50000,   check:()=>bizarreVisits>=10,                                      prog:()=>Math.min(bizarreVisits,10)/10 },
+  { id:'bizarre_coins5',icon:'💜',name:'Bizarre Spender',     desc:'Have 5 Bizarre Coins',                 reward:10000,   check:()=>bizarreCoins>=5,                                        prog:()=>Math.min(bizarreCoins,5)/5 },
+  // Luck Overdrive
+  { id:'overdrive_1',  icon:'⚡', name:'Overdrive!',          desc:'Trigger Luck Overdrive once',          reward:20000,   check:()=>luckOverdriveTimestamps.length===0&&luckOverdriveActive,prog:()=>luckOverdriveActive?1:0 },
+  // Minigame more
+  { id:'mg_5k',        icon:'🎯', name:'Minigame Master',     desc:'Catch 5,000 fish in the minigame',     reward:500000,  check:()=>mgTotalCaught>=5000,                                    prog:()=>Math.min(mgTotalCaught,5000)/5000 },
+  // Events
+  { id:'event_win',    icon:'🏆', name:'Event Victor',        desc:'Complete the Click Frenzy event',      reward:100000,  check:()=>eventState==='complete',                                prog:()=>eventState==='complete'?1:0 },
+  // Speed
+  { id:'speed_click',  icon:'⚡', name:'Speed Demon',         desc:'Reach 5 fish per second',              reward:5000,    check:()=>calcPerSec()>=5,                                        prog:()=>Math.min(calcPerSec(),5)/5 },
+  { id:'speed_100',    icon:'🚀', name:'Hyperspeed',          desc:'Reach 100 fish per second',            reward:50000,   check:()=>calcPerSec()>=100,                                      prog:()=>Math.min(calcPerSec(),100)/100 },
+  { id:'speed_1000',   icon:'🌊', name:'Tidal Wave',          desc:'Reach 1,000 fish per second',          reward:500000,  check:()=>calcPerSec()>=1000,                                     prog:()=>Math.min(calcPerSec(),1000)/1000 },
+  // Fish right now
+  { id:'wallet_10k',   icon:'💰', name:'Loaded',              desc:'Have 10,000 fish at once',             reward:5000,    check:()=>fish>=10000,                                            prog:()=>Math.min(fish,10000)/10000 },
+  { id:'wallet_1m',    icon:'🤑', name:'Swimming in Fish',    desc:'Have 1,000,000 fish at once',          reward:100000,  check:()=>fish>=1000000,                                          prog:()=>Math.min(fish,1000000)/1000000 },
+];
+
+const achievClaimed = new Set();
+
+function checkAchievements() {
+  const unclaimed = ACHIEVEMENTS.filter(a => !achievClaimed.has(a.id) && a.check()).length;
+  const badge = document.getElementById('achievBadge');
+  if (badge) { badge.textContent = unclaimed; badge.style.display = unclaimed > 0 ? 'block' : 'none'; }
+  const panel = document.getElementById('achievPanel');
+  if (panel && panel.classList.contains('open')) renderAchievements();
+}
+
+function toggleAchiev() {
+  const panel = document.getElementById('achievPanel');
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen) { renderAchievements(); checkAchievements(); }
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('statsPanel').classList.remove('open');
+  document.getElementById('storyPanel').classList.remove('open');
+}
+
+function claimAchievement(id) {
+  const a = ACHIEVEMENTS.find(x=>x.id===id);
+  if (!a || achievClaimed.has(id) || !a.check()) return;
+  achievClaimed.add(id);
+  fish += a.reward; totalFish += a.reward;
+  spawnSplash(`🏅 +${fmt(a.reward)} 🐟`, true);
+  wallySay(`Achievement unlocked! 🏅`);
+  updateUI();
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const list = document.getElementById('achievBody');
+  if (!list) return;
+  list.innerHTML = '';
+
+  const ready    = ACHIEVEMENTS.filter(a => !achievClaimed.has(a.id) && a.check());
+  const progress = ACHIEVEMENTS.filter(a => !achievClaimed.has(a.id) && !a.check());
+  const done     = ACHIEVEMENTS.filter(a =>  achievClaimed.has(a.id));
+
+  function makeSection(label, items) {
+    if (!items.length) return;
+    const lbl = document.createElement('div');
+    lbl.className = 'achiev-section-label';
+    lbl.textContent = label;
+    list.appendChild(lbl);
+    for (const a of items) {
+      const isClaimed  = achievClaimed.has(a.id);
+      const isReady    = !isClaimed && a.check();
+      const pct        = Math.min(100, Math.round(a.prog() * 100));
+      const div        = document.createElement('div');
+      div.className    = 'achiev-item' + (isClaimed ? ' claimed' : isReady ? ' unlocked' : '');
+      div.innerHTML = `
+        <div class="achiev-top">
+          <span class="achiev-name">${a.icon} ${a.name}</span>
+          <span>${isClaimed ? '✅' : isReady ? '🎁' : '🔒'}</span>
+        </div>
+        <div class="achiev-desc">${a.desc}</div>
+        <div class="achiev-reward">Reward: +${fmt(a.reward)} 🐟</div>
+        ${!isClaimed ? `<div class="achiev-bar-wrap"><div class="achiev-bar" style="width:${pct}%"></div></div>` : ''}
+        ${isReady    ? `<button class="achiev-claim-btn" onclick="claimAchievement('${a.id}')">🎁 Claim +${fmt(a.reward)} 🐟</button>` : ''}
+        ${isClaimed  ? `<div style="font-size:0.65rem;color:rgba(78,203,113,0.55);font-weight:700;">✅ Claimed!</div>` : ''}`;
+      list.appendChild(div);
+    }
+  }
+
+  makeSection('🎁 Ready to Claim', ready);
+  makeSection('⏳ In Progress', progress);
+  makeSection('✅ Completed', done);
+}
+// ── END ACHIEVEMENTS ──────────────────────────────────────────────────────────
+
+// ── REBIRTH SYSTEM ────────────────────────────────────────────────────────────
+let rebirthCoins = 0;
+let rebirthCount = 0;
+
+// How many RC you'd earn if you rebirthed now
+function calcRebirthCoins() {
+  return Math.floor(Math.sqrt(totalFish / 1000));
+}
+
+const rebirthUpgrades = [
+  { id:'rc_click1',   icon:'👆', name:'Click Power I',     desc:'+1 fish/click permanently',     cost:1,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=1; } },
+  { id:'rc_click2',   icon:'💪', name:'Click Power II',    desc:'+3 fish/click permanently',     cost:3,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=3; } },
+  { id:'rc_click3',   icon:'🔱', name:'Click Power III',   desc:'+10 fish/click permanently',    cost:8,  maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=10; } },
+  { id:'rc_click4',   icon:'⚡', name:'Click Power IV',    desc:'+50 fish/click permanently',    cost:20, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=50; } },
+  { id:'rc_click5',   icon:'🌟', name:'Click Power V',     desc:'+200 fish/click permanently',   cost:60, maxOwned:1,  owned:0, apply:()=>{ fishPerClick+=200; } },
+  { id:'rc_multi',    icon:'✖️', name:'Fish Multiplier',   desc:'All fish earnings ×1.5',        cost:5,  maxOwned:3,  owned:0, apply:()=>{ rebirthMultiplier*=1.5; } },
+  { id:'rc_auto',     icon:'⚙️', name:'Auto Boost',        desc:'Auto-clickers 25% faster',      cost:4,  maxOwned:4,  owned:0, apply:()=>{ rebirthAutoMult*=0.75; } },
+  { id:'rc_lucky',    icon:'🍀', name:'Lucky Aura',        desc:'Rare seal chances +10%',        cost:6,  maxOwned:5,  owned:0, apply:()=>{ rebirthLuckMult*=1.1; } },
+  { id:'rc_start',    icon:'🎁', name:'Head Start',        desc:'Start each run with 500 fish',  cost:3,  maxOwned:5,  owned:0, apply:()=>{ rebirthStartFish+=500; } },
+  { id:'rc_prestige', icon:'👑', name:'Prestige Aura',     desc:'Shop costs 10% cheaper',        cost:10, maxOwned:3,  owned:0, apply:()=>{ rebirthCostMult*=0.9; } },
+];
+
+// Rebirth multipliers (applied globally)
+let rebirthMultiplier = 1;
+let rebirthAutoMult   = 1; // interval divisor
+let rebirthLuckMult   = 1;
+let rebirthStartFish  = 0;
+let rebirthCostMult   = 1;
+
+function applyAllRebirthUpgrades() {
+  rebirthMultiplier = 1; rebirthAutoMult = 1;
+  rebirthLuckMult = 1; rebirthStartFish = 0; rebirthCostMult = 1;
+  fishPerClick = 1; // base, will be adjusted by normal upgrades too
+  for (const ru of rebirthUpgrades) {
+    for (let i = 0; i < ru.owned; i++) ru.apply();
+  }
+}
+
+function openRebirthModal() {
+  const coins = calcRebirthCoins();
+  document.getElementById('rmCoinsPreview').textContent = `You'll receive: ${coins} 🔥 Rebirth Coins`;
+  document.getElementById('rebirthConfirm').classList.add('show');
+}
+function closeRebirthModal() {
+  document.getElementById('rebirthConfirm').classList.remove('show');
+}
+
+function doRebirth() {
+  const earned = calcRebirthCoins();
+  rebirthCoins += earned;
+  rebirthCount++;
+  // Reset
+  fish = 0; totalFish = 0; totalClicks = 0; sealsShown = 0;
+  nikoVisits = 0; hootieVisits = 0; luckyVisits = 0; sorryVisits = 0;
+  mgTotalCaught = 0;
+  for (const item of upgradeItems) {
+    item.owned = 0;
+    if (autoTimers[item.id]) { clearInterval(autoTimers[item.id]); delete autoTimers[item.id]; }
+  }
+  // Re-apply rebirth upgrades
+  applyAllRebirthUpgrades();
+  fish += rebirthStartFish; totalFish += rebirthStartFish;
+  closeRebirthModal();
+  spawnSplash(`🔄 Rebirth! +${earned} 🔥`, true);
+  wallySay(`You were reborn! ${rebirthCount} rebirths 🔄`);
+  switchTab('rebirth');
+  saveGame();
+  updateUI();
+}
+
+function renderRebirth() {
+  const list = document.getElementById('shopList');
+  list.innerHTML = '';
+
+  const coins = calcRebirthCoins();
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+
+  // Header card
+  const header = document.createElement('div');
+  header.style.cssText = 'background:rgba(249,115,22,0.08);border:1.5px solid rgba(249,115,22,0.3);border-radius:13px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;';
+  header.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:'Boogaloo',cursive;font-size:1.1rem;color:var(--rebirth);">🔥 Rebirth Coins</span>
+      <span style="font-family:'Boogaloo',cursive;font-size:1.4rem;color:var(--rebirth);">${rebirthCoins}</span>
+    </div>
+    <div style="font-size:0.68rem;color:rgba(232,244,253,0.35);font-weight:600;">Rebirths: ${rebirthCount} &nbsp;|&nbsp; Next rebirth: +${coins} 🔥</div>
+    <div style="font-size:0.65rem;color:rgba(249,115,22,0.5);font-weight:600;">Earn coins = √(total fish ÷ 1,000)</div>
+    <button onclick="openRebirthModal()" style="font-family:'Boogaloo',cursive;font-size:0.95rem;padding:8px;border-radius:10px;border:2px solid rgba(249,115,22,0.6);background:rgba(249,115,22,0.15);color:var(--rebirth);cursor:none;transition:background 0.2s;margin-top:2px;" onmouseover="this.style.background='rgba(249,115,22,0.3)'" onmouseout="this.style.background='rgba(249,115,22,0.15)'">${coins > 0 ? `🔄 Rebirth (+${coins} 🔥)` : `🔄 Rebirth (need more fish)`}</button>`;
+  wrap.appendChild(header);
+
+  // Upgrades label
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'font-family:"Boogaloo",cursive;font-size:0.7rem;color:rgba(232,244,253,0.28);letter-spacing:1.2px;text-transform:uppercase;padding:4px 2px 0;';
+  lbl.textContent = '🔥 Rebirth Upgrades';
+  wrap.appendChild(lbl);
+
+  for (const ru of rebirthUpgrades) {
+    const maxed = ru.owned >= ru.maxOwned;
+    const canAfford = !maxed && rebirthCoins >= ru.cost;
+    const div = document.createElement('div');
+    div.className = 'rc-item' + (maxed ? ' rc-maxed' : canAfford ? ' rc-affordable' : '');
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="rc-name">${ru.icon} ${ru.name}</span>
+        <span class="rc-owned">${ru.owned}/${ru.maxOwned}</span>
+      </div>
+      <div class="rc-desc">${ru.desc}</div>
+      <div class="rc-cost">
+        <span>🔥</span>
+        <span style="color:${maxed?'rgba(78,203,113,0.7)':canAfford?'#4ecb71':'rgba(232,244,253,0.28)'}">${maxed ? 'MAXED' : ru.cost}</span>
+      </div>`;
+    if (!maxed) {
+      div.addEventListener('click', () => {
+        if (rebirthCoins < ru.cost || ru.owned >= ru.maxOwned) return;
+        rebirthCoins -= ru.cost;
+        ru.owned++;
+        ru.apply();
+        recalcFpc();
+        div.classList.add('buying'); setTimeout(() => div.classList.remove('buying'), 250);
+        spawnSplash(ru.icon + ' unlocked!', true);
+        wallySay('Rebirth upgrade! 🔥');
+        updateUI();
+      });
+    }
+    wrap.appendChild(div);
+  }
+
+  list.appendChild(wrap);
+}
+// ── END REBIRTH ───────────────────────────────────────────────────────────────
 
 let deck = [];
 function refill() { deck = [...normalSeals].sort(() => Math.random() - 0.5); }
@@ -451,7 +911,7 @@ refill();
 function nextNormal() { if (!deck.length) refill(); return deck.pop(); }
 function pickSeal() {
   for (const ss of specialSeals) {
-    if (ss.owned > 0 && Math.random() < ss.chance) return { type:'special', seal:ss };
+    if (ss.owned > 0 && Math.random() < ss.chance * rebirthLuckMult) return { type:'special', seal:ss };
   }
   return { type:'normal', url: nextNormal() };
 }
@@ -489,7 +949,18 @@ function startAuto(item) {
 }
 
 function recalcFpc() {
-  fishPerClick = 1;
+  // start from base 1 + any rebirth click bonuses
+  let base = 1;
+  for (const ru of rebirthUpgrades) {
+    if ((ru.id==='rc_click1'||ru.id==='rc_click2'||ru.id==='rc_click3'||ru.id==='rc_click4'||ru.id==='rc_click5') && ru.owned>0) {
+      if (ru.id==='rc_click1') base+=1*ru.owned;
+      if (ru.id==='rc_click2') base+=3*ru.owned;
+      if (ru.id==='rc_click3') base+=10*ru.owned;
+      if (ru.id==='rc_click4') base+=50*ru.owned;
+      if (ru.id==='rc_click5') base+=200*ru.owned;
+    }
+  }
+  fishPerClick = base;
   for (const item of upgradeItems)
     if (!item.isAuto && item.owned>0) fishPerClick += item.effectVal * item.owned;
 }
@@ -513,9 +984,16 @@ const SAVE_KEY = 'sealclicker_save_v2';
 
 function saveGame() {
   const data = {
-    fish, totalFish, totalClicks, sealsShown, nikoVisits,
+    fish, totalFish, totalClicks, sealsShown, nikoVisits, hootieVisits, luckyVisits, sorryVisits, bizarreVisits, mgTotalCaught,
+    bizarreCoins,
+    bizarreItems: bizarreItems.map(i=>({id:i.id,owned:i.owned})),
+    rebirthCoins, rebirthCount,
+    rebirthUpgrades: rebirthUpgrades.map(r=>({id:r.id,owned:r.owned})),
     upgrades: upgradeItems.map(i=>({id:i.id,owned:i.owned})),
     specials: specialSeals.map(s=>({id:s.id,owned:s.owned})),
+    achievClaimed: [...achievClaimed],
+    usedCodes: [...usedCodes],
+    storySeen: [...storySeen],
     savedAt: Date.now()
   };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -529,9 +1007,18 @@ function loadGame() {
     if (!raw) return;
     const d = JSON.parse(raw);
     fish=d.fish||0; totalFish=d.totalFish||0; totalClicks=d.totalClicks||0;
-    sealsShown=d.sealsShown||0; nikoVisits=d.nikoVisits||0;
+    sealsShown=d.sealsShown||0; nikoVisits=d.nikoVisits||0; mgTotalCaught=d.mgTotalCaught||0;
+    hootieVisits=d.hootieVisits||0; luckyVisits=d.luckyVisits||0; sorryVisits=d.sorryVisits||0;
+    bizarreVisits=d.bizarreVisits||0; bizarreCoins=d.bizarreCoins||0;
+    for (const b of (d.bizarreItems||[])) { const i=bizarreItems.find(x=>x.id===b.id); if(i) i.owned=b.owned||0; }
+    rebirthCoins=d.rebirthCoins||0; rebirthCount=d.rebirthCount||0;
+    for (const r of (d.rebirthUpgrades||[])) { const i=rebirthUpgrades.find(x=>x.id===r.id); if(i) i.owned=r.owned||0; }
+    applyAllRebirthUpgrades();
     for (const s of (d.upgrades||[])) { const i=upgradeItems.find(x=>x.id===s.id); if(i) i.owned=s.owned||0; }
     for (const s of (d.specials||[])) { const i=specialSeals.find(x=>x.id===s.id); if(i) i.owned=s.owned||0; }
+    for (const id of (d.achievClaimed||[])) achievClaimed.add(id);
+    for (const c of (d.usedCodes||[])) usedCodes.add(c);
+    for (const id of (d.storySeen||[])) storySeen.add(id);
     for (const item of upgradeItems) if (item.isAuto && item.owned>0) startAuto(item);
     recalcFpc();
     const ago = Math.round((Date.now()-d.savedAt)/60000);
@@ -548,11 +1035,8 @@ setInterval(saveGame, 30000);
 
 function updateUI() {
   document.getElementById('fishCount').textContent=fmt(fish);
-  document.getElementById('statClicks').textContent=fmt(totalClicks);
-  document.getElementById('statTotal').textContent=fmt(totalFish);
-  document.getElementById('statSeals').textContent=sealsShown;
-  document.getElementById('statFpc').textContent=fishPerClick;
-  document.getElementById('statNiko').textContent=nikoVisits;
+  const bw=document.getElementById('bizarreWallet'); const bc=document.getElementById('bizarreCoinCount');
+  if(bw&&bc){ bc.textContent=bizarreCoins; bw.style.display=bizarreCoins>0?'flex':'none'; }
   const ps=calcPerSec();
   const _psEl=document.getElementById('perSec'); const _psVal=document.getElementById('perSecVal');
   if(_psEl&&_psVal){ _psVal.textContent=fmt(ps); _psEl.style.display=ps>0?'flex':'none'; }
@@ -561,6 +1045,9 @@ function updateUI() {
 
 
   if (!mgRunning) renderShop();
+  checkAchievements();
+  checkStory();
+  updateBizarreTabVisibility();
 }
 
 const captions = [
@@ -571,7 +1058,7 @@ const captions = [
 
 let _uiThrottle = null;
 function earnFish(isAuto=false, bonus=0) {
-  const earned = fishPerClick + bonus;
+  const earned = Math.floor((fishPerClick + bonus) * rebirthMultiplier);
   fish += earned; totalFish += earned; totalClicks++;
   if (eventState==='active') { eventClicks++; if(eventClicks>=EVENT_GOAL){ clearInterval(eventTimer); eventTimer=null; eventState='complete'; fish+=EVENT_REWARD; totalFish+=EVENT_REWARD; spawnSplash('🏆 EVENT COMPLETE! +500K 🐟',true); wallySay('INCREDIBLE!! 🏆🐟🐟🐟'); stopMusic(); updateUI(); return; } }
   if (isAuto) { showAutoPulse(); if(!_uiThrottle) _uiThrottle=setTimeout(()=>{ updateUI(); _uiThrottle=null; },100); }
@@ -593,6 +1080,11 @@ sealFrame.addEventListener('click', e => {
     totalClicks++;
     if (eventState==='active') eventClicks++;
     if (ss.id==='niko') nikoVisits++;
+    if (ss.id==='hootie') hootieVisits++;
+    if (ss.id==='lucky') luckyVisits++;
+    if (ss.id==='sorry') sorryVisits++;
+    if (ss.id==='bizarre') { bizarreVisits++; bizarreCoins += (ss.bizarreBonus||1); spawnSplash('🌀 +1 Bizarre Coin!', true); }
+    trackLuckOverdrive();
     if (ss.id==='lucky') showLuckyOverlay();
     showRarePopup(ss);
     sealImg.src = ss.url;
@@ -753,6 +1245,9 @@ function switchTab(tab) {
   document.getElementById('tabSeals').classList.toggle('active', tab==='seals');
   document.getElementById('tabGame').classList.toggle('active', tab==='game');
   document.getElementById('tabEvents').classList.toggle('active', tab==='events');
+  document.getElementById('tabBizarre') && document.getElementById('tabBizarre').classList.toggle('active', tab==='bizarre');
+  document.getElementById('tabRebirth') && document.getElementById('tabRebirth').classList.toggle('active', tab==='rebirth');
+  document.getElementById('tabAchiev') && document.getElementById('tabAchiev').classList.toggle('active', false);
   if (tab !== 'game') stopMinigame();
   if (tab === 'events') startMusic();
   else stopMusic();
@@ -765,7 +1260,7 @@ function renderShop() {
   list.innerHTML='';
   if (currentTab==='upgrades') {
     for (const item of upgradeItems) {
-      const cost=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned));
+      const cost=Math.floor(item.baseCost*Math.pow(item.costMult,item.owned)*rebirthCostMult);
       const can=fish>=cost;
       const div=document.createElement('div');
       div.className='shop-item'+(can?' can-afford':'');
@@ -789,12 +1284,17 @@ function renderShop() {
       });
       list.appendChild(div);
     }
+  } else if (currentTab === 'rebirth') {
+    renderRebirth();
+  } else if (currentTab === 'bizarre') {
+    renderBizarreShop();
   } else if (currentTab === 'game') {
     renderMinigame();
   } else if (currentTab === 'events') {
     renderEvents();
   } else {
     for (const ss of specialSeals) {
+      if (ss.hidden) continue;
       const cost=Math.floor(ss.cost*Math.pow(ss.costMult,ss.owned));
       const can=fish>=cost;
       const isOwned=ss.owned>0;
@@ -826,6 +1326,56 @@ function renderShop() {
       list.appendChild(div);
     }
   }
+}
+
+function renderStats() {
+  const list = document.getElementById('statsBody');
+  if (!list) return;
+  list.innerHTML = '';
+
+  function section(title, rows) {
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'font-family:"Boogaloo",cursive;font-size:0.72rem;color:rgba(232,244,253,0.28);letter-spacing:1.2px;text-transform:uppercase;padding:8px 2px 3px;';
+    hdr.textContent = title;
+    list.appendChild(hdr);
+    const card = document.createElement('div');
+    card.style.cssText = 'background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:11px;padding:10px 13px;display:flex;flex-direction:column;gap:6px;';
+    for (const [label, val, color] of rows) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;';
+      row.innerHTML = `<span style="color:rgba(232,244,253,0.45);font-weight:600;">${label}</span><span style="font-family:'Boogaloo',cursive;font-size:0.95rem;color:${color||'var(--foam)'};">${val}</span>`;
+      card.appendChild(row);
+    }
+    list.appendChild(card);
+  }
+
+  const ps = calcPerSec();
+  section('🐟 Fish', [
+    ['Fish right now',    fmt(fish),          'var(--gold)'],
+    ['Total earned',      fmt(totalFish),     'var(--gold)'],
+    ['Per click',         fmt(fishPerClick),  '#60c4ff'],
+    ['Per second',        ps>0?fmt(ps):'—',   '#4ecb71'],
+  ]);
+
+  section('👆 Clicks', [
+    ['Total clicks',      fmt(totalClicks),   'var(--foam)'],
+    ['Seals seen',        sealsShown,         'var(--foam)'],
+    ['Minigame catches',  mgTotalCaught,      '#c084fc'],
+  ]);
+
+  section('✨ Rare Seal Visits', [
+    ['😴 Sleepy Niko',   nikoVisits,         '#c084fc'],
+    ['🦉 Hootie',        hootieVisits,       '#c084fc'],
+    ['🥺 Sorry Seal',    sorryVisits,        '#c084fc'],
+    ['🍀 Lucky Seal',    luckyVisits > 0 ? `${luckyVisits} 🎉` : '0', luckyVisits > 0 ? '#00ff50' : 'rgba(232,244,253,0.3)'],
+  ]);
+
+  const owned = upgradeItems.filter(i=>i.owned>=1).length;
+  section('🛒 Upgrades', [
+    ['Owned',             `${owned} / ${upgradeItems.length}`, owned===upgradeItems.length?'#4ecb71':'var(--foam)'],
+    ['Special seals unlocked', `${specialSeals.filter(s=>s.owned>=1).length} / ${specialSeals.length}`, 'var(--foam)'],
+    ['Achievements claimed', `${achievClaimed.size} / ${ACHIEVEMENTS.length}`, 'var(--foam)'],
+  ]);
 }
 
 const EVENT_COST = 100000;
@@ -950,7 +1500,310 @@ function spawnSplash(text, isRare=false) {
   setTimeout(()=>w.remove(),1100);
 }
 
-function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
+function toggleStats() {
+  const panel = document.getElementById('statsPanel');
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen) renderStats();
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('achievPanel').classList.remove('open');
+}
+function toggleShop() {
+  const shop = document.getElementById('shop');
+  const btn  = document.getElementById('shopOpenBtn');
+  const isHidden = shop.classList.toggle('hidden');
+  btn.style.display = isHidden ? 'block' : 'none';
+}
+
+// ── BIZARRE SHOP ──────────────────────────────────────────────────────────────
+const bizarreItems = [
+  { id:'b_click',   icon:'🌀', name:'Bizarre Click',    desc:'+5 fish per click permanently',    cost:2, maxOwned:5,  owned:0 },
+  { id:'b_multi',   icon:'✨', name:'Ora Multiplier',   desc:'All fish earnings ×2',             cost:5, maxOwned:3,  owned:0 },
+  { id:'b_auto',    icon:'⚙️', name:'Bizarre Auto',     desc:'Auto-click every 0.3s',            cost:8, maxOwned:1,  owned:0, isAuto:true, interval:300, cpt:1 },
+  { id:'b_lucky',   icon:'🎲', name:'Bizarre Luck',     desc:'All rare seal chances ×2',         cost:10, maxOwned:1, owned:0 },
+  { id:'b_rebirth', icon:'🔄', name:'Bizarre Rebirth',  desc:'+5 Rebirth Coins on next rebirth', cost:3, maxOwned:5,  owned:0 },
+];
+
+function getBizarreOwned() { return specialSeals.find(s=>s.id==='bizarre')?.owned > 0; }
+
+function updateBizarreTabVisibility() {
+  const btn = document.getElementById('bizarreBtn');
+  const owned = getBizarreOwned();
+  if (btn) btn.style.display = owned ? '' : 'none';
+}
+
+function renderBizarreShop() {
+  const list = document.getElementById('shopList');
+  list.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+
+  // Header
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'background:rgba(168,85,247,0.1);border:1.5px solid rgba(168,85,247,0.35);border-radius:13px;padding:12px 14px;display:flex;flex-direction:column;gap:5px;';
+  hdr.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-family:'Boogaloo',cursive;font-size:1.1rem;color:#c084fc;">🌀 Bizarre Shop</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <img src="https://i.pinimg.com/736x/0e/ba/0e/0eba0ee841d71fb0e4a76bd803f76455.jpg" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(192,132,252,0.5);" />
+        <span style="font-family:'Boogaloo',cursive;font-size:1.3rem;color:#c084fc;">${bizarreCoins}</span>
+      </div>
+    </div>
+    <div style="font-size:0.67rem;color:rgba(192,132,252,0.45);font-weight:600;">Bizarre Coins earned from Bizarre Seal visits 🌀</div>`;
+  wrap.appendChild(hdr);
+
+  for (const item of bizarreItems) {
+    const maxed   = item.owned >= item.maxOwned;
+    const canAfford = !maxed && bizarreCoins >= item.cost;
+    const div = document.createElement('div');
+    div.className = 'rc-item' + (maxed ? ' rc-maxed' : canAfford ? ' rc-affordable' : '');
+    div.style.borderColor = maxed ? 'rgba(78,203,113,0.4)' : canAfford ? 'rgba(168,85,247,0.6)' : 'rgba(168,85,247,0.2)';
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-family:'Boogaloo',cursive;font-size:0.95rem;color:#c084fc;">${item.icon} ${item.name}</span>
+        <span style="font-family:'Boogaloo',cursive;font-size:0.85rem;color:#c084fc;background:rgba(168,85,247,0.12);border-radius:6px;padding:1px 7px;">${item.owned}/${item.maxOwned}</span>
+      </div>
+      <div class="rc-desc">${item.desc}</div>
+      <div class="rc-cost">
+        <img src="https://i.pinimg.com/736x/0e/ba/0e/0eba0ee841d71fb0e4a76bd803f76455.jpg" style="width:14px;height:14px;border-radius:50%;object-fit:cover;" />
+        <span style="color:${maxed?'rgba(78,203,113,0.7)':canAfford?'#4ecb71':'rgba(232,244,253,0.28)'}">${maxed ? 'MAXED' : item.cost}</span>
+      </div>`;
+    if (!maxed) {
+      div.addEventListener('click', () => {
+        if (bizarreCoins < item.cost || item.owned >= item.maxOwned) return;
+        bizarreCoins -= item.cost;
+        item.owned++;
+        // apply effect
+        if (item.id==='b_click') { fishPerClick += 5; }
+        if (item.id==='b_multi') { rebirthMultiplier *= 2; }
+        if (item.id==='b_auto')  { startAuto({...item, id:'b_auto_timer'}); }
+        if (item.id==='b_lucky') { rebirthLuckMult *= 2; }
+        div.classList.add('buying'); setTimeout(()=>div.classList.remove('buying'),250);
+        spawnSplash(item.icon+' bought!', true);
+        wallySay('ORA ORA!! 🌀');
+        saveGame(); updateUI();
+      });
+    }
+    wrap.appendChild(div);
+  }
+  list.appendChild(wrap);
+}
+// ── END BIZARRE SHOP ──────────────────────────────────────────────────────────
+
+// ── CODES ─────────────────────────────────────────────────────────────────────
+const CODES = {
+  'NIKOTIME':   { reward:'seal', sealId:'niko',    msg:'😴 Sleepy Niko unlocked!' },
+  'HOOTIE':     { reward:'seal', sealId:'hootie',  msg:'🦉 Hootie unlocked!' },
+  'SORRYSEAL':  { reward:'seal', sealId:'sorry',   msg:'🥺 Sorry Seal unlocked!' },
+  'FEELLUCKY':  { reward:'seal', sealId:'lucky',   msg:'🍀 Lucky Seal unlocked!' },
+  'JOJO':       { reward:'seal', sealId:'bizarre', msg:'🌀 ZA WARUDO... Bizarre Seal unlocked!!' },
+};
+const usedCodes = new Set();
+
+function redeemCode() {
+  const input = document.getElementById('codeInput');
+  const msg   = document.getElementById('codeMsg');
+  const code  = (input.value||'').trim().toUpperCase();
+  input.value = '';
+  if (!code) { showCodeMsg('Enter a code first!', '#ff6b6b'); return; }
+  if (usedCodes.has(code)) { showCodeMsg('Already redeemed! 🔒', '#ff6b6b'); return; }
+  const def = CODES[code];
+  if (!def) { showCodeMsg('Invalid code 🤔', '#ff6b6b'); return; }
+  usedCodes.add(code);
+  if (def.reward === 'seal') {
+    const seal = specialSeals.find(s => s.id === def.sealId);
+    if (seal) { seal.owned = Math.max(seal.owned, 1); }
+  }
+  showCodeMsg(def.msg, '#4ecb71');
+  spawnSplash('🎟️ Code redeemed!', true);
+  saveGame(); updateUI();
+}
+
+function showCodeMsg(text, color) {
+  const el = document.getElementById('codeMsg');
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = color;
+  setTimeout(() => { if (el.textContent === text) el.textContent = ''; }, 3000);
+}
+// ── END CODES ─────────────────────────────────────────────────────────────────
+
+// ── STORY ─────────────────────────────────────────────────────────────────────
+const STORY_CHAPTERS = [
+  {
+    id:'ch1', trigger:100,
+    chapter:'Chapter I', title:'The First Tide',
+    text:'A lone seal emerged from the frozen north, drawn by a rumour — that somewhere beneath these endless waters lay a treasure beyond counting. With nothing but raw instinct and one flipper raised to the sky, he caught his first fish.\n\n"This is only the beginning," he whispered to the waves.',
+    author:'— The Seal Chronicle, Vol. I'
+  },
+  {
+    id:'ch2', trigger:1000,
+    chapter:'Chapter II', title:'The Weight of a Thousand',
+    text:'Word spread across the ice. Other creatures watched in disbelief as the sea began to yield its bounty — fish by fish, tide by tide. The seal did not rest.\n\n"One thousand," he declared, his voice echoing across the frozen expanse. "And I have only just begun."',
+    author:'— The Seal Chronicle, Vol. I'
+  },
+  {
+    id:'ch3', trigger:10000,
+    chapter:'Chapter III', title:'The Ocean Awakens',
+    text:'The deep stirred. Ancient currents shifted. The ocean itself had taken notice of the one who dared to claim its riches.\n\nFrom the abyss, a sound rose — not threatening, but... watching. The seal pressed on, undeterred.',
+    author:'— The Seal Chronicle, Vol. II'
+  },
+  {
+    id:'ch4', trigger:50000,
+    chapter:'Chapter IV', title:'The Council of Seals',
+    text:'They came from every coast. Sleepy Niko arrived half-awake, carrying fish in his dreams. Hootie descended from a frozen cliff, wise beyond years. The Sorry Seal apologised for being late.\n\nA council had formed. A legend was being written.',
+    author:'— The Seal Chronicle, Vol. II'
+  },
+  {
+    id:'ch5', trigger:100000,
+    chapter:'Chapter V', title:'The Hundred Thousand March',
+    text:'Armies of the deep parted. Kingdoms of coral bowed. One hundred thousand fish — a number no creature had ever dared to dream.\n\n"The ocean does not give," the seal proclaimed. "It rewards the worthy."',
+    author:'— The Seal Chronicle, Vol. III'
+  },
+  {
+    id:'ch6', trigger:500000,
+    chapter:'Chapter VI', title:'The Dark Water Stirs',
+    text:'Something ancient moved beneath the surface. A shadow without shape. A presence without name.\n\nThe seal had grown powerful enough that even the forgotten depths had begun to take notice. Whatever lay below... it was no longer sleeping.',
+    author:'— The Seal Chronicle, Vol. III'
+  },
+  {
+    id:'ch7', trigger:1000000,
+    chapter:'Chapter VII', title:'One Million — The Seal Ascends',
+    text:'The sky turned gold. The ocean fell still.\n\nOne million fish. A number that existed only in myth. The seal stood at the edge of the world, looked into the infinite blue, and understood at last what the rumour had always meant.\n\nThis was not the end. This was the ascension.',
+    author:'— The Seal Chronicle, Vol. IV'
+  },
+  {
+    id:'ch8', trigger:10000000,
+    chapter:'Chapter VIII', title:'Beyond the Known Sea',
+    text:'Charts had run out. Maps had no edges left to draw. The seal had ventured further than any creature before — into waters that had no name, where the fish swam in rivers of pure light.\n\n"Ten million," said the sea. "You have earned the right to know my true name."',
+    author:'— The Seal Chronicle, Vol. IV'
+  },
+  {
+    id:'ch9', trigger:100000000,
+    chapter:'Chapter IX', title:'The Eternal Fisherman',
+    text:'A hundred million fish. The stars rearranged themselves in the shape of a seal.\n\nThe old legends spoke of one — only one — who would harvest the ocean without end. The other seals spoke the name in reverent whispers around their icy fires.\n\nYou.',
+    author:'— The Seal Chronicle, Vol. V'
+  },
+  {
+    id:'ch10', trigger:1000000000,
+    chapter:'Chapter X', title:'God of the Ocean',
+    text:'The ocean knelt.\n\nOne billion fish. The unfathomable made real. The seal did not speak — there were no words left in any tongue to describe what had been accomplished.\n\nThe waves bowed. The deep was silent.\n\nAnd so the Chronicle ends — not with death, but with eternity.',
+    author:'— The Seal Chronicle, Final Volume'
+  },
+];
+
+const storySeen = new Set();
+let storyQueue = [];
+let storyPanelNewCount = 0;
+
+function checkStory() {
+  for (const ch of STORY_CHAPTERS) {
+    if (!storySeen.has(ch.id) && totalFish >= ch.trigger) {
+      storySeen.add(ch.id);
+      storyPanelNewCount++;
+    }
+  }
+  updateStoryBadge();
+}
+
+function showNextStoryCutscene() {
+  if (!storyQueue.length) return;
+  const ch = storyQueue[0];
+  document.getElementById('storyChapterLabel').textContent = ch.chapter;
+  document.getElementById('storyTitle').textContent = ch.title;
+  document.getElementById('storyText').textContent = ch.text;
+  document.getElementById('storyAuthor').textContent = ch.author;
+  document.getElementById('storyCutscene').classList.add('show');
+}
+
+function dismissStoryCutscene() {
+  document.getElementById('storyCutscene').classList.remove('show');
+  storyQueue.shift();
+  setTimeout(() => { if (storyQueue.length) showNextStoryCutscene(); }, 400);
+}
+
+function updateStoryBadge() {
+  const badge = document.getElementById('storyBadge');
+  if (!badge) return;
+  badge.textContent = storyPanelNewCount;
+  badge.style.display = storyPanelNewCount > 0 ? 'block' : 'none';
+}
+
+function toggleStory() {
+  const panel = document.getElementById('storyPanel');
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen) { storyPanelNewCount = 0; updateStoryBadge(); renderStoryLog(); }
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('achievPanel').classList.remove('open');
+  document.getElementById('statsPanel').classList.remove('open');
+}
+
+function renderStoryLog() {
+  const body = document.getElementById('storyPanelBody');
+  if (!body) return;
+  body.innerHTML = '';
+  for (const ch of STORY_CHAPTERS) {
+    const unlocked = storySeen.has(ch.id);
+    const div = document.createElement('div');
+    div.className = 'story-entry' + (unlocked ? '' : ' locked');
+    div.innerHTML = unlocked
+      ? `<div class="story-entry-chapter">${ch.chapter} · ${ch.trigger.toLocaleString()} fish</div>
+         <div class="story-entry-title">${ch.title}</div>
+         <div class="story-entry-text">${ch.text.replace(/\n\n/g,'<br><br>')}</div>
+         <div class="story-entry-chapter" style="margin-top:4px;">${ch.author}</div>`
+      : `<div class="story-entry-chapter">${ch.chapter} · ${ch.trigger.toLocaleString()} fish</div>
+         <div class="story-entry-title">??? — Reach ${ch.trigger.toLocaleString()} fish to unlock</div>`;
+    body.appendChild(div);
+  }
+}
+// ── END STORY ──────────────────────────────────────────────────────────────────
+
+// ── LUCK OVERDRIVE ────────────────────────────────────────────────────────────
+let luckOverdriveTimestamps = [];
+let luckOverdriveActive = false;
+let luckOverdriveTimer = null;
+let luckOverdriveCountdown = null;
+const OVERDRIVE_DURATION = 3 * 60; // 3 minutes in seconds
+
+function trackLuckOverdrive() {
+  const now = Date.now();
+  luckOverdriveTimestamps.push(now);
+  luckOverdriveTimestamps = luckOverdriveTimestamps.filter(t => now - t <= 120000);
+  if (luckOverdriveTimestamps.length >= 10 && !luckOverdriveActive) {
+    triggerLuckOverdrive();
+  }
+}
+
+function triggerLuckOverdrive() {
+  luckOverdriveActive = true;
+  luckOverdriveTimestamps = [];
+  rebirthLuckMult *= 1.05;
+  spawnSplash('⚡ LUCK OVERDRIVE! +5% 🍀', true);
+  wallySay('LUCK OVERDRIVE!! 🍀⚡');
+
+  const frame = document.getElementById('sealFrame');
+  if (frame) { frame.style.borderColor='#ffd700'; frame.style.boxShadow='0 0 40px rgba(255,215,0,0.7)'; }
+
+  let timeLeft = OVERDRIVE_DURATION;
+  const banner = document.getElementById('luckOverdriveBanner');
+  if (banner) banner.style.opacity = '1';
+
+  clearInterval(luckOverdriveCountdown);
+  luckOverdriveCountdown = setInterval(() => {
+    timeLeft--;
+    const m = Math.floor(timeLeft/60), s = String(timeLeft%60).padStart(2,'0');
+    if (banner) banner.textContent = `⚡ LUCK OVERDRIVE! +5% 🍀 — ${m}:${s}`;
+    if (timeLeft <= 0) {
+      clearInterval(luckOverdriveCountdown);
+      rebirthLuckMult /= 1.05;
+      luckOverdriveActive = false;
+      if (banner) { banner.style.opacity='0'; setTimeout(()=>{ banner.textContent='⚡ LUCK OVERDRIVE! Seal chances +5%! 🍀'; },400); }
+      if (frame) { frame.style.borderColor=''; frame.style.boxShadow=''; }
+    }
+  }, 1000);
+}
+// ── END LUCK OVERDRIVE ────────────────────────────────────────────────────────
+
+function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); document.getElementById('achievPanel').classList.remove('open'); document.getElementById('statsPanel').classList.remove('open'); document.getElementById('storyPanel').classList.remove('open'); }
 let soundEnabled = true, soundVolume = 60;
 function toggleSound(val) { soundEnabled = val; gainNode.gain.value = val ? soundVolume/100 : 0; }
 function setSoundVol(v) { soundVolume = parseInt(v); document.getElementById('soundVolVal').textContent = v; if(soundEnabled && gainNode) gainNode.gain.value = soundVolume/100; }
@@ -1039,7 +1892,7 @@ function startMusic() {
 
 document.addEventListener('click', () => { if(audioCtx.state==='suspended') audioCtx.resume(); }, {once:true});
 
-let mgRunning = false, mgTimeLeft = 0, mgCaught = 0;
+let mgRunning = false, mgTimeLeft = 0, mgCaught = 0, mgTotalCaught = 0;
 let mgInterval = null, mgFishInterval = null, mgSealInterval = null;
 const MG_DURATION = 15;
 
@@ -1095,6 +1948,7 @@ function spawnMgFish() {
     if (!mgRunning || el.classList.contains('caught')) return;
     el.classList.add('caught');
     mgCaught++;
+    mgTotalCaught++;
     const earned = Math.max(1, Math.floor(fishPerClick * 0.5));
     fish += earned; totalFish += earned; totalClicks++;
     const s = document.getElementById('mgScore');
